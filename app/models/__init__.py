@@ -1,5 +1,5 @@
-import os
 import importlib
+import os
 
 # Caminho absoluto da pasta atual
 models_dir = os.path.dirname(__file__)

@@ -23,7 +23,7 @@
 
   async function fetchTags() {
     try {
-      const response = await fetch("/rfid/get_tags");
+      const response = await fetch("{{ url_for('get_tags') }}");
       const data = await response.json();
 
       const header = document.getElementById("tags-header");
@@ -37,7 +37,6 @@
           th.textContent = key.charAt(0).toUpperCase() + key.slice(1);
           header.appendChild(th);
         });
-        header.classList.add("table-primary");
       }
 
       // Limpa o corpo da tabela

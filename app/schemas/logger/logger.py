@@ -1,20 +1,20 @@
-from pathlib import Path
-from datetime import datetime, timedelta
 import logging
 import os
+from datetime import datetime, timedelta
+from pathlib import Path
+
 from app.core.config import settings
 
 # Cria diretório de logs
-log_dir = Path(settings.LOG_PATH)
+log_dir = Path(settings.data.get("LOG_PATH"))
 log_dir.mkdir(exist_ok=True)
 
-# Apaga logs com mais de settings.STORAGE_DAYS dias
-cutoff_date = datetime.now() - timedelta(days=settings.STORAGE_DAYS)
+cutoff_date = datetime.now() - timedelta(days=settings.data.get("STORAGE_DAYS"))
 for log_path in log_dir.glob("*.log"):
     try:
         # Extrai a data do nome do arquivo ignorando sufixos (_info ou _error)
         # Exemplo de nome: "2025-05-19_info.log"
-        date_part = log_path.stem.split('_')[0]  # Pega só o "2025-05-19"
+        date_part = log_path.stem.split("_")[0]  # Pega só o "2025-05-19"
         file_date = datetime.strptime(date_part, "%Y-%m-%d")
         if file_date < cutoff_date:
             os.remove(log_path)
@@ -29,21 +29,26 @@ info_log_file = log_dir / f"{today_str}_info.log"
 error_log_file = log_dir / f"{today_str}_error.log"
 
 # Formatação do log
-formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s", "%Y-%m-%d %H:%M:%S")
+formatter = logging.Formatter(
+    "[%(asctime)s] [%(levelname)s] %(message)s", "%Y-%m-%d %H:%M:%S"
+)
 
 # Logger principal
 logger = logging.getLogger("simple_logger")
 logger.setLevel(logging.DEBUG)
 logger.propagate = False
 
+
 # Filtros personalizados
 class InfoFilter(logging.Filter):
     def filter(self, record):
         return record.levelno >= logging.INFO and record.levelno < logging.ERROR
 
+
 class ErrorFilter(logging.Filter):
     def filter(self, record):
         return record.levelno >= logging.ERROR
+
 
 if not logger.handlers:
     # Handler para logs INFO (e WARNING)

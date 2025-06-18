@@ -1,9 +1,11 @@
-from app.schemas.validators.tag import WriteTagValidator
-from app.schemas.logger import log_error, log_info
 import asyncio
 
+from app.schemas.logger import log_error, log_info
+from app.schemas.validators.tag import WriteTagValidator
+
+
 class WriteCommands:
-    async def write_epc(self, tag_command: dict, exist = False, clear = True):
+    async def write_epc(self, tag_command: dict, exist=False, clear=True):
         """
         Writes a new EPC (Electronic Product Code) to RFID tags.
 
@@ -28,68 +30,144 @@ class WriteCommands:
         """
         try:
             validated = WriteTagValidator(**tag_command)
-       
-            #TID FROM EPC
-            if validated.target_identifier == 'epc':
+
+            # TID FROM EPC
+            if validated.target_identifier == "epc":
                 print(f"Get tid from -> {validated.target_value}")
                 tid_from_epc = await self.get_tid_from_epc(validated.target_value)
                 if tid_from_epc is not None:
                     validated.target_value = tid_from_epc
                     print(f"Using tid -> {validated.target_value}")
-                    validated.target_identifier = 'tid'
+                    validated.target_identifier = "tid"
 
-            #SAVE TAG TO WRITE
-            if validated.target_identifier == 'tid' and not exist:
+            # SAVE TAG TO WRITE
+            if validated.target_identifier == "tid" and not exist:
                 tag_cmd = {
                     "target_identifier": validated.target_identifier,
                     "target_value": validated.target_value,
                     "new_epc": validated.new_epc,
-                    "password": validated.password
+                    "password": validated.password,
                 }
-                self.tags_to_write[validated.target_value] = {"target":validated.new_epc, 'retry':self.config.get("WRITE_RETRY_COUNT"), "tag_cmd":tag_cmd}
-                print("Tag To Write -> ",self.tags_to_write[validated.target_value])
-            
-            #STOP READING BEFORE WRITE
+                self.tags_to_write[validated.target_value] = {
+                    "target": validated.new_epc,
+                    "retry": self.config.get("WRITE_RETRY_COUNT"),
+                    "tag_cmd": tag_cmd,
+                }
+                print("Tag To Write -> ", self.tags_to_write[validated.target_value])
+
+            # STOP READING BEFORE WRITE
             if self.is_reading:
-                await self.send_data([0xa5, 0x5a, 0x00, 0x08, 0x8c, 0x00, 0x0d, 0x0a])
-                await self.send_data([0xa5, 0x5a, 0x00, 0x09, 0x8d, 0x01, 0x00, 0x0d, 0x0a])
+                await self.send_data([0xA5, 0x5A, 0x00, 0x08, 0x8C, 0x00, 0x0D, 0x0A])
+                await self.send_data(
+                    [0xA5, 0x5A, 0x00, 0x09, 0x8D, 0x01, 0x00, 0x0D, 0x0A]
+                )
                 await asyncio.sleep(0.5)
 
-            #NO TARGET
+            # NO TARGET
             if validated.target_identifier is None:
                 new_epc_bytes = await self.get_bytes_from_str(validated.new_epc)
-                data = [0xa5, 0x5a, 0x00, 0x22, 0x86, 0x00, 0x00, 0x00, 0x00, 0x01, 
-                           0x00, 0x20, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x06, 
-                           *new_epc_bytes, 0x00, 0x0d, 0x0a]
-                await self.send_data(data) 
+                data = [
+                    0xA5,
+                    0x5A,
+                    0x00,
+                    0x22,
+                    0x86,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x01,
+                    0x00,
+                    0x20,
+                    0x00,
+                    0x00,
+                    0x01,
+                    0x00,
+                    0x02,
+                    0x00,
+                    0x06,
+                    *new_epc_bytes,
+                    0x00,
+                    0x0D,
+                    0x0A,
+                ]
+                await self.send_data(data)
 
-            #EPC TARGET
+            # EPC TARGET
             elif validated.target_identifier == "epc":
                 new_epc_bytes = await self.get_bytes_from_str(validated.new_epc)
                 target__bytes = await self.get_bytes_from_str(validated.target_value)
-                data = [0xa5, 0x5a, 0x00, 0x2e, 0x86, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 
-                           0x20, 0x00, 0x60, *target__bytes,0x01, 0x00, 0x02, 0x00, 0x06, 
-                           *new_epc_bytes, 0x00, 0x0d, 0x0a]
-                await self.send_data(data) 
+                data = [
+                    0xA5,
+                    0x5A,
+                    0x00,
+                    0x2E,
+                    0x86,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x01,
+                    0x00,
+                    0x20,
+                    0x00,
+                    0x60,
+                    *target__bytes,
+                    0x01,
+                    0x00,
+                    0x02,
+                    0x00,
+                    0x06,
+                    *new_epc_bytes,
+                    0x00,
+                    0x0D,
+                    0x0A,
+                ]
+                await self.send_data(data)
 
-            #TID TARGET
+            # TID TARGET
             elif validated.target_identifier == "tid":
                 new_epc_bytes = await self.get_bytes_from_str(validated.new_epc)
                 target__bytes = await self.get_bytes_from_str(validated.target_value)
-                data = [0xa5, 0x5a, 0x00, 0x2e, 0x86, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 
-                           0x00, 0x00, 0x60, *target__bytes, 0x01, 0x00, 0x02, 0x00, 0x06, 
-                           *new_epc_bytes, 0x00, 0x0d, 0x0a]
-                await self.send_data(data) 
+                data = [
+                    0xA5,
+                    0x5A,
+                    0x00,
+                    0x2E,
+                    0x86,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x02,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x60,
+                    *target__bytes,
+                    0x01,
+                    0x00,
+                    0x02,
+                    0x00,
+                    0x06,
+                    *new_epc_bytes,
+                    0x00,
+                    0x0D,
+                    0x0A,
+                ]
+                await self.send_data(data)
 
-            #RESUME READING AFTER WRITE
+            # RESUME READING AFTER WRITE
             if self.is_reading:
                 await asyncio.sleep(0.5)
-                await self.send_data([0xa5, 0x5a, 0x00, 0x0a, 0x82, 0x00, 0x00, 0x00, 0x0d, 0x0a])
+                await self.send_data(
+                    [0xA5, 0x5A, 0x00, 0x0A, 0x82, 0x00, 0x00, 0x00, 0x0D, 0x0A]
+                )
 
             if clear:
                 await asyncio.sleep(0.3)
                 await self.clear_tags()
-        
+
         except Exception as e:
             log_error(e)
 
@@ -102,7 +180,4 @@ class WriteCommands:
         if len(word) % 2 != 0:
             word = "0" + word  # Garante número par de caracteres
 
-        return [int(word[i:i+2], 16) for i in range(0, len(word), 2)]
-
-
-    
+        return [int(word[i : i + 2], 16) for i in range(0, len(word), 2)]

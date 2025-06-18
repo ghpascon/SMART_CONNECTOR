@@ -1,13 +1,24 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, DateTime, Integer, String, Boolean
+
 from app.db.session import Base
+
 
 class DbTag(Base):
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True, index=True)
-    datetime = Column(DateTime)                   
-    device = Column(String(50))             
-    epc = Column(String(50))             
+    datetime = Column(DateTime)
+    device = Column(String(50))
+    epc = Column(String(50))
     tid = Column(String(50))
     ant = Column(Integer)
     rssi = Column(Integer)
+
+
+class DbInventory(Base):
+    __tablename__ = "inventory"
+
+    id = Column(Integer, primary_key=True, index=True)
+    datetime = Column(DateTime)
+    device = Column(String(50))
+    state = Column(Boolean)

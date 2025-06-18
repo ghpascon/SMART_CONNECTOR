@@ -1,42 +1,53 @@
-from ..validators.tag import TagSchema
-from pydantic import ValidationError
-from ..logger import log_error
+import asyncio
+from datetime import datetime
 
-class RFID:
+from ...db.database import database_engine
+from ...models.rfid import DbTag
+from ..logger import log_error, log_info
+from .actions import RFIDAction
+from .on_event import OnEvent
+
+
+class RFID(OnEvent, RFIDAction):
     def __init__(self):
         self.tags = {}
+        self.actions = {}
+        asyncio.run(self.set_actions(None))
 
-    async def clear_tags(self, reader: str | None):
-        if reader is None:
+    async def clear_tags(self, device: str | None = None):
+        if device is None:
             self.tags = {}
             return
-        self.tags = {
-            k: v for k, v in self.tags.items() if v.get("device") != reader
-        }
-        
-    async def on_tag(self, tag: dict, verbose = True):
+        self.tags = {k: v for k, v in self.tags.items() if v.get("device") != device}
+        log_info(f"[ CLEAR ] -> Reader: {device}")
+
+    async def save_tags(self, device):
         try:
-            tag_validado = TagSchema(**tag)
+            time = datetime.now()
+            async with database_engine.get_db() as db:
+                for epc in self.tags:
+                    tag = self.tags.get(epc)
+                    if not device == tag.get("device"):
+                        continue
 
-            tag_exist = False
-            if tag_validado.epc in self.tags:
-                tag_exist = True
+                    current_tag = DbTag(
+                        datetime=time,
+                        device=tag.get("device"),
+                        epc=tag.get("epc"),
+                        tid=tag.get("tid"),
+                        ant=tag.get("ant"),
+                        rssi=tag.get("rssi"),
+                    )
 
-            if tag_exist and tag_validado.rssi <= self.tags[tag_validado.epc].get("rssi"):
-                return
+                    if current_tag.epc is None:
+                        continue
+                    db.add(current_tag)
 
-            current_tag = {
-                "device":tag_validado.device,
-                "epc":tag_validado.epc,
-                "tid":tag_validado.tid,
-                "ant":tag_validado.ant,
-                "rssi":tag_validado.rssi,
-            }
-            if verbose and not tag_exist:
-                print(f"[TAG] {current_tag}")
-            self.tags[tag_validado.epc] = current_tag
+                await db.commit()
+                log_info(f"[ SAVE TAGS ] -> {device}")
 
-        except ValidationError as e:
-            log_error(f"❌ Tag inválida: {e.json()}")
+        except Exception as e:
+            log_error(f"Erro ao salvar tags: {e}")
+
 
 rfid = RFID()

@@ -1,13 +1,17 @@
 import asyncio
-import os
 import importlib
 import inspect
+import os
 import sys
+
 from app.core.path import get_path
+
 
 async def create_tasks(modulo_dir):
     package_path = os.path.abspath(get_path(modulo_dir))
-    sys.path.insert(0, os.path.dirname(package_path))  # garante que o Python ache o pacote
+    sys.path.insert(
+        0, os.path.dirname(package_path)
+    )  # garante que o Python ache o pacote
     package_name = os.path.basename(package_path)
 
     tasks = []
@@ -18,7 +22,7 @@ async def create_tasks(modulo_dir):
         if arquivo == "__pycache__":
             continue
 
-        if os.path.isdir(full_path) and not arquivo.startswith('.'):
+        if os.path.isdir(full_path) and not arquivo.startswith("."):
             # Recurse and add tasks from subdirectories
             sub_tasks = await create_tasks(full_path)
             tasks.extend(sub_tasks)

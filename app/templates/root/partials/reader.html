@@ -3,28 +3,30 @@
   <h1>{{ device }}</h1>
 
   <!-- BUTTONS -->
-  <div style="padding: 0%" class="d-flex">
-    <button
-      onclick="fetch('/rfid/start?device={{ device }}')"
-      class="btn btn-success"
-    >
-      Start
-    </button>
-    <button
-      onclick="fetch('/rfid/stop?device={{ device }}')"
-      class="btn btn-danger"
-      style="margin-left: 15px"
-    >
-      Stop
-    </button>
-    <button
-      onclick="fetch('/rfid/clear?device={{ device }}')"
-      class="btn btn-warning"
-      style="margin-left: 15px"
-    >
-      Clear
-    </button>
-  </div>
+ <div style="padding: 0%" class="d-flex">
+  <button
+    onclick="fetch('{{ url_for('start_inventory', device=device) }}', { method: 'POST' })"
+    class="btn btn-success"
+  >
+    Start
+  </button>
+
+  <button
+    onclick="fetch('{{ url_for('stop_inventory', device=device) }}', { method: 'POST' })"
+    class="btn btn-danger"
+    style="margin-left: 15px"
+  >
+    Stop
+  </button>
+
+  <button
+    onclick="fetch('{{ url_for('clear_tags', device=device) }}', { method: 'POST' })"
+    class="btn btn-warning"
+    style="margin-left: 15px"
+  >
+    Clear 
+  </button>
+</div>
 
   <!-- STATE -->
   <div
@@ -37,7 +39,7 @@
 <script>
   async function updateReadingState_{{ device|replace(' ', '_') }}() {
     try {
-      const response = await fetch("/rfid/reader_state?device={{ device }}");
+      const response = await fetch("{{ url_for('get_reader_state') }}?device={{ device }}");
       if (!response.ok) {
         throw new Error("Erro na resposta da requisição");
       }

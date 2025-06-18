@@ -1,7 +1,10 @@
-from fastapi.templating import Jinja2Templates
 from datetime import datetime
+
+from fastapi.templating import Jinja2Templates
+
 from ..core.path import get_path
 from ..schemas.devices import devices
+
 
 def generate_footer():
     year = datetime.now().year

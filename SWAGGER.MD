@@ -1,4 +1,7 @@
+<img src="/static/images/smartx_logo.png" alt="Logo" class="img-fluid" style="height: 50px;" />
+
 # 📡 RFID MIDDLEWARE
+[**HOME**](/)
 
 O **RFID Middleware smartx** é uma solução desenvolvida para **gestão de leitores RFID**, oferecendo **alta performance**, **escalabilidade** e **flexibilidade** na integração com sistemas.
 
