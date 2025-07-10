@@ -10,6 +10,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.async_func import create_tasks
 from app.core.config import settings
 from app.core.path import get_path, include_all_routers
+from app.core.fast_alerts import fast_alerts
+
 
 
 # Async lifespan handler
@@ -55,6 +57,7 @@ app.add_middleware(
 # Global 404 handler
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
+    fast_alerts.add_alert(f"Invalid Route: {request.url}")
     return RedirectResponse(url=request.app.url_path_for("index"))
 
 # Static files
