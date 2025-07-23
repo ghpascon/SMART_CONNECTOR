@@ -14,24 +14,28 @@ class AddDevice:
         ### R700
         if reader == "R700_IOT":
             from ..readers.RFID.R700_IOT import R700_IOT
+
             self.devices[unique_name] = R700_IOT(data, name)
 
         ### UR4
         elif reader == "UR4":
             from ..readers.RFID.UR4 import UR4
+
             self.devices[unique_name] = UR4(data, name)
 
         ### X714
         elif reader == "X714":
             from ..readers.RFID.X714 import X714
+
             self.devices[unique_name] = X714(data, name)
 
-        ### TCP 
+        ### TCP
         elif reader == "TCP":
             from ..readers.OTHERS.TCP import TCP
+
             self.devices[unique_name] = TCP(data, name)
 
-        ### 
+        ###
         else:
             print(
                 f"⚠️ Unknown reader type '{reader}'. Device '{unique_name}' was not added."

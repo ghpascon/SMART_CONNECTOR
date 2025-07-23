@@ -1,14 +1,13 @@
 import asyncio
 
-from ...db.database import database_engine
-from ...models.rfid import DbTag
 import logging
-from .actions import RFIDAction
+from .actions import Actions
 from .on_event import OnEvent
 
 from collections import deque
 
-class RFID(OnEvent, RFIDAction):
+
+class Events(OnEvent, Actions):
     def __init__(self):
         self.tags = {}
         self.events = deque(maxlen=20)
@@ -23,4 +22,4 @@ class RFID(OnEvent, RFIDAction):
         logging.info(f"[ CLEAR ] -> Reader: {device}")
 
 
-rfid = RFID()
+events = Events()

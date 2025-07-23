@@ -1,4 +1,3 @@
-
 class RfidCommands:
     async def start_inventory(self):
         self.write("#READ:ON")

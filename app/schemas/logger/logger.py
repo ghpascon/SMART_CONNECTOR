@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 import json
 
+
 class LoggerManager:
     def __init__(self):
         self.log_dir = None
@@ -30,14 +31,14 @@ class LoggerManager:
             logger.removeHandler(handler)
 
         # Cria handler para arquivo
-        file_handler = logging.FileHandler(log_filename, mode='a', encoding='utf-8')
-        file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler = logging.FileHandler(log_filename, mode="a", encoding="utf-8")
+        file_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
 
         # Cria handler para o console
         console_handler = logging.StreamHandler()
-        console_formatter = logging.Formatter('%(levelname)s - %(message)s')
+        console_formatter = logging.Formatter("%(levelname)s - %(message)s")
         console_handler.setFormatter(console_formatter)
         logger.addHandler(console_handler)
 
@@ -56,5 +57,6 @@ class LoggerManager:
                 continue  # Ignora arquivos com nome fora do padrão
             except Exception as e:
                 print(f"Erro ao remover log {log_path.name}: {e}")
+
 
 logger_manager = LoggerManager()

@@ -13,6 +13,7 @@ from sqlalchemy.orm import DeclarativeMeta
 import csv
 import zipfile
 from io import StringIO, BytesIO
+from sqlalchemy.pool import NullPool
 
 from fastapi import Response
 from fastapi.responses import StreamingResponse
@@ -64,9 +65,8 @@ class DatabaseEngine:
         try:
             self.database_url = self._load_database_url()
             if not self.database_url:
-                msg = "URL do banco de dados inválida ou não encontrada. Inicialização adiada."
+                msg = "Invalid or missing database URL. Initialization postponed."
                 logging.error(f"[DatabaseEngine._initialize_engines_and_session] {msg}")
-                # Deixa atributos None e retorna erro
                 return {"error": msg}
 
             dialect_plus_driver = self.database_url.split("://")[0]
@@ -90,13 +90,22 @@ class DatabaseEngine:
                 self.sync_url = self.database_url.replace(f"+{async_driver}", "")
 
             self.sync_engine = create_engine(self.sync_url, echo=False)
-            self.async_engine = create_async_engine(
-                self.database_url,
-                echo=False,
-                pool_size=10,
-                max_overflow=20,
-                pool_pre_ping=True,
-            )
+
+            # SQLite does not support pool parameters
+            if dialect == "sqlite":
+                self.async_engine = create_async_engine(
+                    self.database_url,
+                    echo=False,
+                    poolclass=NullPool
+                )
+            else:
+                self.async_engine = create_async_engine(
+                    self.database_url,
+                    echo=False,
+                    pool_size=10,
+                    max_overflow=20,
+                    pool_pre_ping=True,
+                )
 
             self.SessionLocal = sessionmaker(
                 bind=self.async_engine,
@@ -107,12 +116,13 @@ class DatabaseEngine:
 
             self.create_tables()
             logging.info(
-                "[DatabaseEngine._initialize_engines_and_session] Inicialização das engines e sessão realizada com sucesso."
+                "[DatabaseEngine._initialize_engines_and_session] Engine and session initialization successful."
             )
             return True
+
         except Exception as e:
             logging.error(
-                f"[DatabaseEngine._initialize_engines_and_session] Erro ao inicializar engines e sessão: {e}"
+                f"[DatabaseEngine._initialize_engines_and_session] Failed to initialize engines and session: {e}"
             )
             self.database_url = None
             self.sync_url = None
@@ -120,6 +130,7 @@ class DatabaseEngine:
             self.async_engine = None
             self.SessionLocal = None
             return {"error": str(e)}
+        
 
     def create_tables(self):
         if self.sync_engine is None:

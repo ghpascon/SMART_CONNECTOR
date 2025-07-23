@@ -17,7 +17,7 @@ router = APIRouter(prefix=router_prefix, tags=[router_prefix])
     "/get_device_list",
     responses=device_list_responses,
     summary="Get all device names",
-    description="Returns a list of all registered device names."
+    description="Returns a list of all registered device names.",
 )
 async def api_get_device_list():
     return devices.get_device_list()
@@ -27,7 +27,7 @@ async def api_get_device_list():
     "/get_device_config/{device_name}",
     responses=config_responses,
     summary="Get device configuration",
-    description="Returns the current configuration of the specified device."
+    description="Returns the current configuration of the specified device.",
 )
 async def get_device_config(device_name: str):
     try:
@@ -45,7 +45,7 @@ async def get_device_config(device_name: str):
     "/get_device_types_list",
     responses=device_list_responses,
     summary="Get list of supported device types",
-    description="Returns a list of supported device types that can be configured."
+    description="Returns a list of supported device types that can be configured.",
 )
 async def api_get_device_types_list():
     return await devices.get_device_types()
@@ -55,7 +55,7 @@ async def api_get_device_types_list():
     "/get_example_config/{device_name}",
     responses=config_responses,
     summary="Get example config for a device type",
-    description="Returns an example configuration for a given device type."
+    description="Returns an example configuration for a given device type.",
 )
 async def get_example_config(device_name: str):
     try:
@@ -69,7 +69,7 @@ async def get_example_config(device_name: str):
 @router.post(
     "/create_device/{device_name}",
     summary="Create a new device",
-    description="Creates a new device with the given name and configuration."
+    description="Creates a new device with the given name and configuration.",
 )
 async def create_device(device_name: str, data: dict):
     try:
@@ -83,7 +83,7 @@ async def create_device(device_name: str, data: dict):
 @router.put(
     "/update_device/{device_name}",
     summary="Update an existing device",
-    description="Updates the configuration of an existing device."
+    description="Updates the configuration of an existing device.",
 )
 async def update_device(device_name: str, data: dict):
     try:
@@ -100,7 +100,7 @@ async def update_device(device_name: str, data: dict):
 @router.delete(
     "/delete_device/{device_name}",
     summary="Delete a device",
-    description="Deletes the specified device from the system."
+    description="Deletes the specified device from the system.",
 )
 async def delete_device(device_name: str):
     try:

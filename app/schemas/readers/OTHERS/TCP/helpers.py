@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from ....rfid import rfid
+from ....events import events
 
 
 class Helpers:
@@ -39,4 +39,4 @@ class Helpers:
             logging.error(f"[RECEIVE ERROR] {e}")
 
     async def on_received_cmd(self, data: str):
-        await rfid.on_event(self.device_name, self.event_type, data)
+        await events.on_event(self.device_name, self.event_type, data)

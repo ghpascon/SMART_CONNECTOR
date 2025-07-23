@@ -26,7 +26,9 @@ class TagRequest(BaseModel):
 
 class RfidRequest(BaseModel):
     HTTP_POST: Optional[str] = Field("http://localhost:5001")
-    DATABASE_URL: Optional[str] = Field("mysql+aiomysql://root:admin@localhost:3306/middleware_smartx")
+    DATABASE_URL: Optional[str] = Field(
+        "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx"
+    )
     STORAGE_DAYS: int = Field(7)
     LOG_PATH: str = Field("Logs")
 
@@ -35,11 +37,12 @@ class InventoryRequest(BaseModel):
     device: str = Field("DEVICE01")
     state: bool = True
 
+
 class EventRequest(BaseModel):
     device: str = Field("DEVICE01")
     event_type: str = Field("event_type")
-    event_data: Any = {"data":"xyz"}
-    
+    event_data: Any = {"data": "xyz"}
+
 
 class SetGpoRequest(BaseModel):
     gpo_pin: Optional[int] = Field(1)
@@ -53,62 +56,34 @@ class SetGpoRequest(BaseModel):
 gpo_responses = {
     200: {
         "description": "GPO command executed successfully",
-        "content": {
-            "application/json": {
-                "example": {"msg": "GPO DEVICE_01, True"}
-            }
-        },
+        "content": {"application/json": {"example": {"msg": "GPO DEVICE_01, True"}}},
     },
     400: {
         "description": "Invalid device",
-        "content": {
-            "application/json": {
-                "example": {"detail": "Invalid device"}
-            }
-        },
+        "content": {"application/json": {"example": {"detail": "Invalid device"}}},
     },
     404: {
         "description": "No GPO found for device",
-        "content": {
-            "application/json": {
-                "example": {"msg": "No Gpo"}
-            }
-        },
+        "content": {"application/json": {"example": {"msg": "No Gpo"}}},
     },
     422: {
         "description": "Validation error",
-        "content": {
-            "application/json": {
-                "example": {"detail": "Invalid device"}
-            }
-        },
+        "content": {"application/json": {"example": {"detail": "Invalid device"}}},
     },
     500: {
         "description": "Internal Server Error",
-        "content": {
-            "application/json": {
-                "example": {"msg": "Exception message"}
-            }
-        },
+        "content": {"application/json": {"example": {"msg": "Exception message"}}},
     },
 }
 
 rfid_base_responses = {
     200: {
         "description": "Operation successful",
-        "content": {
-            "application/json": {
-                "example": {"msg": "success"}
-            }
-        },
+        "content": {"application/json": {"example": {"msg": "success"}}},
     },
     422: {
         "description": "Validation error",
-        "content": {
-            "application/json": {
-                "example": {"detail": "error"}
-            }
-        },
+        "content": {"application/json": {"example": {"detail": "error"}}},
     },
 }
 
@@ -128,10 +103,6 @@ rfid_actions_responses = {
     },
     422: {
         "description": "Invalid input or action",
-        "content": {
-            "application/json": {
-                "example": {"detail": "error"}
-            }
-        },
+        "content": {"application/json": {"example": {"detail": "error"}}},
     },
 }

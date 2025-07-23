@@ -8,9 +8,9 @@ import logging
 from app.db.database import database_engine
 
 from app.models.rfid import DbEvent, DbTag
-from datetime import datetime
 
-class RFIDAction:
+
+class Actions:
     async def set_actions(self, data=None, action_path="config/actions.json"):
         if data is not None:
             self.actions = data
@@ -65,8 +65,8 @@ class RFIDAction:
                 "device": tag.get("device"),
                 "event_type": "tag",
                 "event_data": tag,
-                "timestamp":tag.get("timestamp"),
-            }            
+                "timestamp": tag.get("timestamp"),
+            }
             async with aiohttp.ClientSession() as session:
                 async with session.post(endpoint, json=payload) as response:
                     pass
@@ -76,12 +76,14 @@ class RFIDAction:
     ### EVENTS
     async def on_events(self, device, event_type, event_data, timestamp):
         # SAVE IN MEMORY
-        self.events.appendleft({
-            "timestamp":timestamp,
-            "device": device,
-            "event_type": event_type,
-            "event_data": event_data,
-        })
+        self.events.appendleft(
+            {
+                "timestamp": timestamp,
+                "device": device,
+                "event_type": event_type,
+                "event_data": event_data,
+            }
+        )
 
         # DATABASE EVENT
         asyncio.create_task(self.event_db(device, event_type, event_data, timestamp))
@@ -89,7 +91,9 @@ class RFIDAction:
         # POST EVENT
         http_post = self.actions.get("HTTP_POST")
         if http_post:
-            asyncio.create_task(self.post_event(device, event_type, event_data, timestamp, http_post))
+            asyncio.create_task(
+                self.post_event(device, event_type, event_data, timestamp, http_post)
+            )
 
     async def event_db(self, device, event_type, event_data, timestamp):
         try:
@@ -98,7 +102,7 @@ class RFIDAction:
                     timestamp=timestamp,
                     device=device,
                     event_type=event_type,
-                    event_data=str(event_data)
+                    event_data=str(event_data),
                 )
 
                 db.add(current_event)
@@ -110,7 +114,7 @@ class RFIDAction:
     async def post_event(self, device, event_type, event_data, timestamp, endpoint):
         try:
             payload = {
-                "timestamp":timestamp,
+                "timestamp": timestamp,
                 "device": device,
                 "event_type": event_type,
                 "event_data": event_data,

@@ -2,7 +2,7 @@ import asyncio
 
 import logging
 
-from ....rfid import rfid
+from ....events import events
 
 
 class OnReceive:
@@ -16,9 +16,9 @@ class OnReceive:
             self.is_reading = data.endswith("on")
             if self.is_reading:
                 await self.clear_tags()
-                await rfid.on_start(self.name)
+                await events.on_start(self.name)
             else:
-                await rfid.on_stop(self.name)
+                await events.on_stop(self.name)
 
         elif data.startswith("#t+@"):
             tag = data[4:]
@@ -30,7 +30,7 @@ class OnReceive:
                 "ant": int(ant),
                 "rssi": int(rssi) * (-1),
             }
-            asyncio.create_task(rfid.on_tag(current_tag))
+            asyncio.create_task(events.on_tag(current_tag))
 
         elif data.startswith("#set_cmd:"):
             logging.info(f"CONFIG -> {data[data.index(':')+1:]}")

@@ -2,7 +2,7 @@ class FastAlerts:
     def __init__(self):
         self.alerts: list[dict] = []
 
-    def add_alert(self, detail: str, style: str = 'alert-primary'):
+    def add_alert(self, detail: str, style: str = "alert-primary"):
         """
         Add an alert message with a specified Bootstrap style.
         Parameters:
@@ -17,10 +17,7 @@ class FastAlerts:
             - 'alert-light'     (light background)
             - 'alert-dark'      (dark background)
         """
-        self.alerts.append({
-            "detail": detail,
-            "style": style
-        })
+        self.alerts.append({"detail": detail, "style": style})
 
     def get_alerts(self) -> list[dict]:
         """
@@ -38,5 +35,6 @@ class FastAlerts:
         Clear all stored alerts.
         """
         self.alerts = []
+
 
 fast_alerts = FastAlerts()

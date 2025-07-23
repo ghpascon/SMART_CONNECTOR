@@ -1,6 +1,8 @@
 {
   "READER": "X714",
   "CONNECTION": "AUTO",
+  "VID": 1,
+  "PID": 1,
   "BAUDRATE": 115200,
   "ANT": {
     "1": {

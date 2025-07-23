@@ -13,7 +13,6 @@ from app.core.path import get_path, include_all_routers
 from app.core.fast_alerts import fast_alerts
 
 
-
 # Async lifespan handler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,15 +32,14 @@ async def lifespan(app: FastAPI):
             except Exception as e:
                 print(f"Error while cancelling task {i}: {e}")
 
+
 # Load Swagger markdown description
 with open("SWAGGER.md", "r", encoding="utf-8") as f:
     markdown_description = f.read()
 
 # FastAPI app instance
 app = FastAPI(
-    lifespan=lifespan,
-    title="RFID Middleware",
-    description=markdown_description
+    lifespan=lifespan, title="RFID Middleware", description=markdown_description
 )
 
 # Session middleware
@@ -49,16 +47,18 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=settings.data.get("SECRET_KEY"),
     session_cookie="session",
-    https_only=True,        # Recommended for production
-    same_site="lax",        # Basic CSRF protection
-    max_age=3600            # Session lifetime (seconds)
+    https_only=True,  # Recommended for production
+    same_site="lax",  # Basic CSRF protection
+    max_age=3600,  # Session lifetime (seconds)
 )
+
 
 # Global 404 handler
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     fast_alerts.add_alert(f"Invalid Route: {request.url}")
     return RedirectResponse(url=request.app.url_path_for("index"))
+
 
 # Static files
 app.mount("/static", StaticFiles(directory=get_path("app/static")), name="static")

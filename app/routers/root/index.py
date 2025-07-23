@@ -7,18 +7,8 @@ router = APIRouter(prefix="", tags=["Root"])
 
 
 @router.get("/", response_class=HTMLResponse)
-async def index(request: Request, msg: str = None, classe: str = "alert-primary"):
-    alerts = []
-
-    if msg is not None and not len(msg) == 0:
-        alert = {"text": msg, "class": classe}
-        alerts.append(alert)
-
+async def index(request: Request):
     return templates.TemplateResponse(
         "root/index.html",
-        {
-            "request": request,
-            "title": "RFID MIDDLEWARE",
-            "alerts": alerts,
-        },
+        {"request": request, "title": "RFID MIDDLEWARE"},
     )

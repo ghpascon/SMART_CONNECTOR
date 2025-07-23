@@ -1,13 +1,12 @@
-import asyncio
-
 from pydantic import ValidationError
 
 import logging
 from ..validators.tag import TagSchema
 from datetime import datetime
 
+
 class OnEvent:
-    async def on_tag(self, tag: dict, verbose: bool=True):
+    async def on_tag(self, tag: dict, verbose: bool = True):
         try:
             tag_validado = TagSchema(**tag)
 
@@ -21,7 +20,7 @@ class OnEvent:
                 return
 
             current_tag = {
-                "timestamp":datetime.now(),
+                "timestamp": datetime.now(),
                 "device": tag_validado.device,
                 "epc": tag_validado.epc,
                 "tid": tag_validado.tid,
@@ -45,7 +44,9 @@ class OnEvent:
         logging.info(f"[ STOP ] -> Reader: {device}")
         await self.on_event(device, "inventory", False)
 
-    async def on_event(self, device: str, event_type: str, event_data) -> None: 
+    async def on_event(self, device: str, event_type: str, event_data) -> None:
         timestamp = datetime.now()
-        logging.info(f"[ EVENT ] - {timestamp} - {device} - {event_type} - {event_data}")
+        logging.info(
+            f"[ EVENT ] - {timestamp} - {device} - {event_type} - {event_data}"
+        )
         await self.on_events(device, event_type, event_data, timestamp)

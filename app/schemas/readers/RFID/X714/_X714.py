@@ -13,10 +13,12 @@ from .rfid import RfidCommands
 class X714(asyncio.Protocol, OnReceive, RfidCommands):
     def __init__(self, config, name):
         self.is_rfid_reader = True
-        
+
         self.config = config
         self.port = self.config.get("CONNECTION")
         self.baudrate = self.config.get("BAUDRATE")
+        self.vid = self.config.get("VID", 1)
+        self.pid = self.config.get("PID", 1)
         self.name = name
 
         self.transport = None
@@ -27,8 +29,7 @@ class X714(asyncio.Protocol, OnReceive, RfidCommands):
         self.is_connected = False
         self.is_reading = False
 
-        self.is_auto = (self.port == "AUTO") 
-
+        self.is_auto = self.port == "AUTO"
 
     def connection_made(self, transport):
         self.transport = transport
@@ -78,13 +79,13 @@ class X714(asyncio.Protocol, OnReceive, RfidCommands):
                 found_port = None
                 for p in ports:
                     # p.vid and p.pid are integers (e.g. 0x0001 == 1 decimal)
-                    if p.vid == 0x0001 and p.pid == 0x0001:
+                    if p.vid == self.vid and p.pid == self.pid:
                         found_port = p.device
                         print(f"✅ Detected port: {found_port}")
                         break
 
                 if found_port is None:
-                    print("⚠️ No port with VID=0001 and PID=0001 found.")
+                    print(f"⚠️ No port with VID={self.vid} and PID={self.pid} found.")
                     print("⏳ Retrying in 3 seconds...")
                     await asyncio.sleep(3)
                     continue  # try to detect again in next loop

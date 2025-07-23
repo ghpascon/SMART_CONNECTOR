@@ -1,4 +1,4 @@
-from ..rfid import rfid
+from ..events import events
 
 
 class DevicesCommands:
@@ -9,10 +9,10 @@ class DevicesCommands:
         await self.devices[device].stop_inventory()
 
     async def clear_tags(self, device: str | None = None):
-        await rfid.clear_tags(device)
+        await events.clear_tags(device)
 
-    async def set_gpo(self, device: str, gpo_data : dict):
-        if hasattr(self.devices[device], 'set_gpo'):
+    async def set_gpo(self, device: str, gpo_data: dict):
+        if hasattr(self.devices[device], "set_gpo"):
             await self.devices[device].set_gpo(gpo_data)
             return True
         return False

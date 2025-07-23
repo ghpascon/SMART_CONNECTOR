@@ -52,8 +52,11 @@ async def clear_tags(device: str):
     await devices.clear_tags(device)
     return {"msg": f"{device} clear tags"}
 
+
 @router.post("/set_gpo/{device}/{gpo_pin}/{state}/{control}/{time}")
-async def set_gpo(device: str, gpo_pin: int, state: bool, control: str, time: int = 1000):
+async def set_gpo(
+    device: str, gpo_pin: int, state: bool, control: str, time: int = 1000
+):
     try:
         # 1. Validação do dispositivo
         try:
@@ -69,7 +72,7 @@ async def set_gpo(device: str, gpo_pin: int, state: bool, control: str, time: in
                 "gpo_pin": gpo_pin,
                 "state": state,
                 "control": control,
-                "time": time
+                "time": time,
             }
 
             result = await devices.set_gpo(device, gpo_data)
@@ -82,11 +85,14 @@ async def set_gpo(device: str, gpo_pin: int, state: bool, control: str, time: in
             return {"msg": f"GPO {device}, {state}"}
         else:
             print(f"{device} não possui GPO configurado")
-            return JSONResponse(status_code=404, content={"msg": f"Dispositivo {device} não possui GPO"})
+            return JSONResponse(
+                status_code=404, content={"msg": f"Dispositivo {device} não possui GPO"}
+            )
 
     except HTTPException as http_err:
         raise http_err
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"msg": f"Erro interno inesperado: {str(e)}"})
-
+        return JSONResponse(
+            status_code=500, content={"msg": f"Erro interno inesperado: {str(e)}"}
+        )

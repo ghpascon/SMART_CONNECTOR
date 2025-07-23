@@ -8,7 +8,7 @@ from app.schemas.api.rfid import (
     rfid_base_responses,
 )
 from app.schemas.devices import devices
-from app.schemas.rfid import rfid
+from app.schemas.events import events
 from app.core.config import settings
 
 router_prefix = get_prefix_from_path(__file__)
@@ -19,14 +19,14 @@ router = APIRouter(prefix=router_prefix, tags=[router_prefix])
     "/get_actions",
     responses=rfid_actions_responses,
     summary="Get current RFID actions",
-    description="Returns the list of currently configured RFID actions for all connected devices."
+    description="Returns the list of currently configured RFID actions for all connected devices.",
 )
 async def get_actions():
     """
     Retrieve the currently configured actions for the RFID system.
     """
     try:
-        return rfid.actions
+        return events.actions
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -35,7 +35,7 @@ async def get_actions():
     "/set_actions",
     responses=rfid_actions_responses,
     summary="Set RFID actions",
-    description="Sets or updates the configured RFID actions and reloads application settings."
+    description="Sets or updates the configured RFID actions and reloads application settings.",
 )
 async def set_actions(data: RfidRequest):
     """
@@ -44,7 +44,7 @@ async def set_actions(data: RfidRequest):
     """
     try:
         data = data.model_dump()
-        await rfid.set_actions(data)
+        await events.set_actions(data)
         settings.load()
         return {"msg": "success", "data": data}
     except Exception as e:

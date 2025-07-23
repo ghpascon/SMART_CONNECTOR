@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request
 from app.core.path import get_prefix_from_path
 from app.db.database import database_engine
 from app.schemas.devices import devices
-from app.schemas.rfid import rfid
+from app.schemas.events import events
 
 router = APIRouter(
     prefix=get_prefix_from_path(__file__), tags=[get_prefix_from_path(__file__)]
@@ -13,7 +13,7 @@ router = APIRouter(
 @router.get("/get_tags")
 async def get_tags():
     tags_info = []
-    current_tags = dict(rfid.tags)  # Cópia do dicionário atual
+    current_tags = dict(events.tags)  # Cópia do dicionário atual
 
     total = {
         "timestamp": "Total",
@@ -44,7 +44,7 @@ async def get_tags():
 
 @router.get("/get_events")
 async def get_events():
-    return list(rfid.events)
+    return list(events.events)
 
 
 @router.get("/reader_state/{device}")

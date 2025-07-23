@@ -28,4 +28,3 @@ async def daily_clear_db():
             f"Next DB clear scheduled in {wait_seconds/3600:.2f} hours (Brasília time)"
         )
         await asyncio.sleep(wait_seconds)
-

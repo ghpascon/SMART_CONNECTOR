@@ -59,7 +59,7 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
                         continue
 
                 for i in range(1, 4):
-                    await self.set_gpo({"gpo_pin":i, "state":True})
+                    await self.set_gpo({"gpo_pin": i, "state": True})
 
                 self.is_connected = True
                 await self.get_tag_list(session)

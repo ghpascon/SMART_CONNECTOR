@@ -4,6 +4,7 @@ import importlib
 import os
 import logging
 
+
 def get_path(relative_path: str) -> Path:
     """
     Retorna o caminho absoluto do arquivo ou diretório, levando em consideração se o
@@ -46,6 +47,7 @@ def get_prefix_from_path(current_file: str, base_dir: str = "routers") -> str:
     prefix_string = "/" + "/".join(prefix_parts)
     prefix_string = prefix_string.replace(".py", "")
     return prefix_string
+
 
 # Include all routers dynamically
 def include_all_routers(current_path, app):

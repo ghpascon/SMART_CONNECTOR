@@ -97,14 +97,16 @@ class ReaderHelpers:
         return None
 
     async def get_gpo_command(self, gpo_data: dict):
-        gpo_pin = gpo_data.get('gpo_pin',1)
-        state = 'high' if gpo_data.get('state',True) else 'low'
-        control = gpo_data.get('control','static')
-        time = gpo_data.get('time',1000)
+        gpo_pin = gpo_data.get("gpo_pin", 1)
+        state = "high" if gpo_data.get("state", True) else "low"
+        control = gpo_data.get("control", "static")
+        time = gpo_data.get("time", 1000)
 
         if control == "static":
             gpo_command = {
-                "gpoConfigurations": [{"gpo": gpo_pin, "state": state, "control": control}]
+                "gpoConfigurations": [
+                    {"gpo": gpo_pin, "state": state, "control": control}
+                ]
             }
 
         elif control == "pulsed":

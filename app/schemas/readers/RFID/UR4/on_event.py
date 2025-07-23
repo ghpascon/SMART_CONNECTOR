@@ -2,7 +2,7 @@ import asyncio
 
 import logging
 
-from ....rfid import rfid
+from ....events import events
 
 
 class OnEvent:
@@ -59,7 +59,7 @@ class OnEvent:
             "rssi": rssi,
         }
 
-        asyncio.create_task(rfid.on_tag(current_tag))
+        asyncio.create_task(events.on_tag(current_tag))
 
     async def on_gpi(self, data):
         gpi1 = data[6] == 0x01
