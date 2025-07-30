@@ -1,3 +1,5 @@
 {
-    "SECRET_KEY":"smtx"
+  "SECRET_KEY": "smtx",
+  "OPEN_BROWSER": false,
+  "BEEP": true
 }

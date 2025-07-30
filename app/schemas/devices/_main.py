@@ -56,7 +56,7 @@ class Devices(AddDevice, DevicesCommands, ManageDevices):
                 except Exception as e:
                     logging.error(f"❌ Erro ao processar o arquivo '{filename}': {e}")
 
-    async def get_device_types(self, path="config/device_examples"):
+    async def get_device_types(self, path="config/examples/device_examples"):
         try:
             filenames = []
             for file in os.listdir(path):
@@ -66,7 +66,7 @@ class Devices(AddDevice, DevicesCommands, ManageDevices):
         except Exception as e:
             return {"error": str(e)}
 
-    async def get_example_config(self, device, path="config/device_examples"):
+    async def get_example_config(self, device, path="config/examples/device_examples"):
         try:
             path += f"/{device}.json"
             with open(path, "r") as f:

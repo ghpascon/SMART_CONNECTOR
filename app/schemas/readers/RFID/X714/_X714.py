@@ -1,7 +1,9 @@
 import asyncio
+import time
 import serial.tools.list_ports
 import serial_asyncio
 
+from app.core.config import settings
 import logging
 
 from .on_receive import OnReceive
@@ -34,6 +36,7 @@ class X714(asyncio.Protocol, OnReceive, RfidCommands):
         self.is_connected = True
         logging.info("✅ Serial connection successfully established.")
         asyncio.create_task(self.config_reader())
+        
 
     def data_received(self, data):
         self.rx_buffer += data
@@ -66,6 +69,8 @@ class X714(asyncio.Protocol, OnReceive, RfidCommands):
     async def connect(self):
         """Serial connection/reconnection loop"""
         loop = asyncio.get_running_loop()
+
+        asyncio.create_task(self.auto_clear())
 
         while True:
             self.on_con_lost = asyncio.Event()

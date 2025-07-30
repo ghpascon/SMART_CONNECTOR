@@ -1,6 +1,7 @@
 {
-  "HTTP_POST": null,
-  "DATABASE_URL": "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx",
-  "STORAGE_DAYS": 7,
-  "LOG_PATH": "Logs"
+    "HTTP_POST": null,
+    "DATABASE_URL": "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx",
+    "XTRACK_URL": "https://demo.smtx.com.br:6100/req",
+    "STORAGE_DAYS": 0,
+    "LOG_PATH": "Logs"
 }

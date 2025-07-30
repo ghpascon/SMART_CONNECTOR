@@ -2,7 +2,16 @@ import re
 from typing import Optional, Any
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
+import json
 
+def load_example_from_json(path: str) -> dict:
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Erro ao carregar JSON de exemplo: {e}")
+        return {}
+    
 class TagRequest(BaseModel):
     device: str = Field(default="DEVICE_01")
     epc: str = Field(default="000000000000000000000001")
@@ -53,12 +62,15 @@ class TagRequestSimulator(BaseModel):
         return v
 
 
-class RfidRequest(BaseModel):
+class ActionsRequest(BaseModel):
     HTTP_POST: Optional[str] = Field("http://localhost:5001")
     DATABASE_URL: Optional[str] = Field(
         "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx"
     )
-    STORAGE_DAYS: int = Field(7)
+    XTRACK_URL: Optional[str] = Field(
+        "https://192.168.0.100:6100/req"
+    )
+    STORAGE_DAYS: int = Field(0)
     LOG_PATH: str = Field("Logs")
 
 
@@ -121,12 +133,7 @@ rfid_actions_responses = {
         "description": "RFID action settings returned successfully",
         "content": {
             "application/json": {
-                "example": {
-                    "HTTP_POST": "http://localhost:5001",
-                    "DATABASE_URL": "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx",
-                    "STORAGE_DAYS": 7,
-                    "LOG_PATH": "Logs",
-                }
+                "example": load_example_from_json("config/examples/actions.json")
             }
         },
     },

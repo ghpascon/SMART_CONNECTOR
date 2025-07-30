@@ -1,3 +1,5 @@
+import asyncio
+
 class RfidCommands:
     async def start_inventory(self):
         self.write("#READ:ON")
@@ -39,3 +41,12 @@ class RfidCommands:
         set_cmd = set_cmd.lower()
         set_cmd = set_cmd.replace("true", "on").replace("false", "off")
         self.write(set_cmd)
+        if self.config.get('START_READING', False):
+            await self.start_inventory()
+            self.is_reading = True
+
+    async def auto_clear(self):
+        while True:
+            await asyncio.sleep(30)
+            if self.is_connected:
+                await self.clear_tags()

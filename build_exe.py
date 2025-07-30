@@ -13,6 +13,7 @@ manual_hidden = [
     "uvicorn.config",
     "uvicorn.main",
     "uvicorn.loops.auto",
+    "winsound"
 ]
 
 # Inclui todos os submódulos do "serial.tools" manualmente

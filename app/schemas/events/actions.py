@@ -8,9 +8,18 @@ import logging
 from app.db.database import database_engine
 
 from app.models.rfid import DbEvent, DbTag
-
+from app.core.indicator import beep
+from app.core.config import settings
 
 class Actions:
+    async def get_actions_example(self, path="config/examples/actions.json"):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return dict(json.load(f))
+        except Exception as e:
+            logging.error(f"[get_actions_example] Falha ao carregar '{path}': {e}")
+            return None
+
     async def set_actions(self, data=None, action_path="config/actions.json"):
         if data is not None:
             self.actions = data
@@ -38,6 +47,15 @@ class Actions:
         http_post = self.actions.get("HTTP_POST")
         if http_post:
             asyncio.create_task(self.post_tag(tag, http_post))
+
+        # XTRACK TAG
+        xtrack_post = self.actions.get("XTRACK_URL")
+        if xtrack_post:
+            asyncio.create_task(self.post_tag_xtrack(tag, xtrack_post))            
+
+        # BEEP
+        if settings.data.get("BEEP", False):
+            asyncio.create_task(beep())
 
     async def tag_db(self, tag):
         try:
@@ -69,6 +87,19 @@ class Actions:
             }
             async with aiohttp.ClientSession() as session:
                 async with session.post(endpoint, json=payload) as response:
+                    pass
+        except Exception as e:
+            logging.info(f"Erro ao enviar tag: {e}")
+
+    async def post_tag_xtrack(self, tag, endpoint):
+        try:
+            payload = f"""<msg>
+                        <command>ReportRead</command>
+                        <data>EVENT=|DEVICENAME={tag.get("device", "")}|ANTENNANAME={tag.get("ant", "")}|TAGID={tag.get("epc", "")}|</data>
+                        <cmpl>STATE=|DATA1=|DATA2=|DATA3=|DATA4=|DATA5=|</cmpl>
+                        </msg>"""
+            async with aiohttp.ClientSession() as session:
+                async with session.post(endpoint, data=payload, headers={"Content-Type": "application/xml"}) as response:
                     pass
         except Exception as e:
             logging.info(f"Erro ao enviar tag: {e}")

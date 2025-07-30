@@ -89,11 +89,13 @@ if __name__ == "__main__":
     import uvicorn
     port = 5000
 
-    # # Optional: Open browser automatically
-    # import webbrowser
-    # import threading
-    # def open_browser():
-    #     webbrowser.open_new(f"http://localhost:{port}")
-    # threading.Timer(1.0, open_browser).start()
+    if settings.data.get("OPEN_BROWSER",True):
+        import webbrowser
+        import threading
+        def open_browser():
+            webbrowser.open_new(f"http://localhost:{port}")
+        threading.Timer(1.0, open_browser).start()
 
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+# "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx"
