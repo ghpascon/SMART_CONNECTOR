@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
-
+from app.core.config import settings
 from app.core.templates import templates
 
 router = APIRouter(prefix="", tags=["Root"])
@@ -10,5 +10,5 @@ router = APIRouter(prefix="", tags=["Root"])
 async def index(request: Request):
     return templates.TemplateResponse(
         "root/index.html",
-        {"request": request, "title": "RFID MIDDLEWARE"},
+        {"request": request, "title": settings.data.get("TITLE", "SMARTX")},
     )

@@ -5,11 +5,11 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class TagSchema(BaseModel):
-    device: Optional[str] = Field(None)
-    epc: str = Field(..., max_length=50)
+    device: str = Field("DEVICE01")
+    epc: str = Field("000000000000000000000001")
     tid: Optional[str] = Field(None)
-    ant: int
-    rssi: int
+    ant: Optional[int]
+    rssi: Optional[int]
 
     @field_validator("epc", "tid")
     def validate_epc_length_and_hex(cls, v, field):

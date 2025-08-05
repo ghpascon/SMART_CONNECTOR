@@ -21,7 +21,8 @@ async def get_tags():
         "epc": "",
         "tid": "",
         "ant": "",
-        "rssi": len(current_tags),
+        "rssi": "",
+        "gtin": len(current_tags),
     }
     tags_info.append(total)
 
@@ -29,15 +30,8 @@ async def get_tags():
         tag_data = current_tags.get(tag)
         if tag_data is None:
             continue
-        current_tag = {
-            "timestamp": tag_data.get("timestamp"),
-            "device": tag_data.get("device"),
-            "epc": tag_data.get("epc"),
-            "tid": tag_data.get("tid"),
-            "ant": tag_data.get("ant"),
-            "rssi": tag_data.get("rssi"),
-        }
-        tags_info.append(current_tag)
+
+        tags_info.append(tag_data)
 
     return tags_info
 

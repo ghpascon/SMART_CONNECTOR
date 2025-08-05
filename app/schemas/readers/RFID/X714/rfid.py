@@ -38,6 +38,9 @@ class RfidCommands:
         # SIMPLE_SEND
         set_cmd += f"|SIMPLE_SEND:{self.config.get('SIMPLE_SEND')}"
 
+        # KEYBOARD
+        set_cmd += f"|KEYBOARD:{self.config.get('KEYBOARD')}"
+
         set_cmd = set_cmd.lower()
         set_cmd = set_cmd.replace("true", "on").replace("false", "off")
         self.write(set_cmd)

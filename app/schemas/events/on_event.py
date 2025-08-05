@@ -3,6 +3,7 @@ from pydantic import ValidationError
 import logging
 from ..validators.tag import TagSchema
 from datetime import datetime
+from pyepc import SGTIN
 
 
 class OnEvent:
@@ -19,6 +20,11 @@ class OnEvent:
             ):
                 return
 
+            try:    
+                gtin = SGTIN.decode(tag_validado.epc).gtin
+            except:
+                gtin = ""
+
             current_tag = {
                 "timestamp": datetime.now(),
                 "device": tag_validado.device,
@@ -26,6 +32,7 @@ class OnEvent:
                 "tid": tag_validado.tid,
                 "ant": tag_validado.ant,
                 "rssi": tag_validado.rssi,
+                "gtin": gtin,
             }
             self.tags[tag_validado.epc] = current_tag
             if verbose and not tag_exist:

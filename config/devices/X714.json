@@ -31,5 +31,6 @@
   "GPI_START": false,
   "IGNORE_READ": false,
   "ALWAYS_SEND": true,
-  "SIMPLE_SEND": false
+  "SIMPLE_SEND": false,
+  "KEYBOARD": false
 }
