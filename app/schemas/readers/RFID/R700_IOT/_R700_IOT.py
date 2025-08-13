@@ -57,9 +57,12 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
                         print("Failed to start inventory")
                         await asyncio.sleep(1)
                         continue
+                if self.config.get("START_READING"):
+                    self.is_reading = True
+
 
                 for i in range(1, 4):
-                    await self.set_gpo({"gpo_pin": i, "state": True})
+                    await self.set_gpo({"gpo_pin": i, "state": False})
 
                 self.is_connected = True
                 await self.get_tag_list(session)

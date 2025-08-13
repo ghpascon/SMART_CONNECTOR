@@ -61,14 +61,7 @@ class Actions:
     async def tag_db(self, tag):
         try:
             async with database_engine.get_db() as db:
-                current_tag = DbTag(
-                    timestamp=tag.get("timestamp"),
-                    device=tag.get("device"),
-                    epc=tag.get("epc"),
-                    tid=tag.get("tid"),
-                    ant=tag.get("ant"),
-                    rssi=tag.get("rssi"),
-                )
+                current_tag = DbTag(**tag)
 
                 if current_tag.epc is None:
                     return

@@ -68,7 +68,7 @@ extra_data = [
 
 # === Executa o PyInstaller ===
 PyInstaller.__main__.run(
-    [ENTRY_SCRIPT, f"--name={APP_NAME}", "--onefile", "--console"]
+    [ENTRY_SCRIPT, f"--name={APP_NAME}", "--onedir", "--console"]
     + [
         f"--hidden-import={h}"
         for h in hiddenimports + manual_hidden + serial_asyncio_hidden + serial_tools_hidden

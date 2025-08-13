@@ -1,6 +1,6 @@
 {
   "READER": "R700_IOT",
-  "CONNECTION": "impinj-15-d4-2d",
+  "CONNECTION": "impinj-15-d3-d9",
   "START_READING": true,
   "READING_CONFIG": {
     "antennaConfigs": [
@@ -12,7 +12,7 @@
         "inventorySession": 1,
         "receiveSensitivityDbm": -80,
         "rfMode": 1002,
-        "transmitPowerCdbm": 3300
+        "transmitPowerCdbm": 1400
       },
       {
         "antennaPort": 2,
@@ -22,7 +22,7 @@
         "inventorySession": 1,
         "receiveSensitivityDbm": -80,
         "rfMode": 1002,
-        "transmitPowerCdbm": 3300
+        "transmitPowerCdbm": 1400
       },
       {
         "antennaPort": 3,
@@ -32,7 +32,7 @@
         "inventorySession": 1,
         "receiveSensitivityDbm": -80,
         "rfMode": 1002,
-        "transmitPowerCdbm": 3300
+        "transmitPowerCdbm": 1400
       },
       {
         "antennaPort": 4,
@@ -42,7 +42,7 @@
         "inventorySession": 1,
         "receiveSensitivityDbm": -80,
         "rfMode": 1002,
-        "transmitPowerCdbm": 3300
+        "transmitPowerCdbm": 1400
       }
     ],
     "eventConfig": {

@@ -40,7 +40,11 @@ with open("SWAGGER.md", "r", encoding="utf-8") as f:
 
 # FastAPI app instance
 app = FastAPI(
-    lifespan=lifespan, title="RFID Middleware", description=markdown_description
+    lifespan=lifespan,
+    title=settings.data.get("TITLE", "SMARTX"),
+    description=markdown_description,
+    redoc_url=None,
+    docs_url=None
 )
 
 # Session middleware
@@ -50,7 +54,7 @@ app.add_middleware(
     session_cookie="session",
     https_only=True,  # Recommended for production
     same_site="lax",  # Basic CSRF protection
-    max_age=3600,  # Session lifetime (seconds)
+    max_age=3600,  # Session lifetime (seconds),
 )
 
 
@@ -96,6 +100,6 @@ if __name__ == "__main__":
             webbrowser.open_new(f"http://localhost:{port}")
         threading.Timer(1.0, open_browser).start()
 
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port, access_log=False)
 
 # "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx"

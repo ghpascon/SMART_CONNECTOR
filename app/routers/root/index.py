@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import HTMLResponse
+from fastapi.openapi.docs import get_swagger_ui_html
 from app.core.config import settings
 from app.core.templates import templates
 
@@ -11,4 +12,14 @@ async def index(request: Request):
     return templates.TemplateResponse(
         "root/index.html",
         {"request": request, "title": settings.data.get("TITLE", "SMARTX")},
+    )
+
+@router.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title=settings.data.get("TITLE", "SMARTX") + " - Docs",
+        swagger_js_url="/static/docs/swagger-ui-bundle.js",
+        swagger_css_url="/static/docs/swagger-ui.css",
+        swagger_favicon_url="/static/images/logo.png"
     )

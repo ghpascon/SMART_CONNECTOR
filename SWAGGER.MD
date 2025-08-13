@@ -1,4 +1,4 @@
-<img src="/static/images/smartx_logo.png" alt="Logo" class="img-fluid" style="height: 50px;" />
+<img src="/static/images/logo.png" alt="Logo" class="img-fluid" style="height: 50px;" />
 
 # 📡 RFID MIDDLEWARE
 [**HOME**](/)
