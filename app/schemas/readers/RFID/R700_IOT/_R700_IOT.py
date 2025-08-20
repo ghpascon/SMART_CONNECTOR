@@ -111,16 +111,13 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
             tag_commands = [tag_commands]
 
         all_commands = []
-        alerts = []
-
         for tag in tag_commands:
             try:
                 validated_tag = WriteTagValidator(**tag)
+                all_commands.append(await self.get_write_cmd(validated_tag))
             except Exception as e:
-                alerts.append(e)
+                logging.error(e)
                 continue
 
-            all_commands.append(await self.get_write_cmd(validated_tag))
         await self.send_write_command(all_commands)
-        await self.clear_tags()
-        return alerts
+

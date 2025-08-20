@@ -13,7 +13,6 @@ manual_hidden = [
     "uvicorn.config",
     "uvicorn.main",
     "uvicorn.loops.auto",
-    "winsound"
 ]
 
 # Inclui todos os submódulos do "serial.tools" manualmente
@@ -68,7 +67,7 @@ extra_data = [
 
 # === Executa o PyInstaller ===
 PyInstaller.__main__.run(
-    [ENTRY_SCRIPT, f"--name={APP_NAME}", "--onedir", "--console"]
+    [ENTRY_SCRIPT, f"--name={APP_NAME}", "--onefile", "--console"]
     + [
         f"--hidden-import={h}"
         for h in hiddenimports + manual_hidden + serial_asyncio_hidden + serial_tools_hidden

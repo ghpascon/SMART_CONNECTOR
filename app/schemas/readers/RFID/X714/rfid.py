@@ -47,6 +47,9 @@ class RfidCommands:
         if self.config.get('START_READING', False):
             await self.start_inventory()
             self.is_reading = True
+        else: 
+            await self.stop_inventory()
+            self.is_reading = False
 
     async def auto_clear(self):
         while True:

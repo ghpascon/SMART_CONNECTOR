@@ -1,0 +1,30 @@
+<div class="card card-body">
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    {% for device in device_list() %}
+    <div class="d-flex flex-column align-items-start me-3 mb-3">
+      <!-- Botão que controla a div colapsável -->
+      <button
+        class="btn btn-primary device-btn"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#actions_{{ device|replace(' ', '_') }}"
+        aria-expanded="false"
+        aria-controls="actions_{{ device|replace(' ', '_') }}"
+        onclick="setActiveButton(this)"
+        id="toggle-btn-{{ device|replace(' ', '_') }}"
+      >
+        {{ device }}
+      </button>
+    </div>
+
+    <!-- Div colapsável referente a este device -->
+    <div
+      class="collapse mt-2 w-100"
+      id="actions_{{ device|replace(' ', '_') }}"
+    >
+      {% with device=device %} {% include "root/partials/reader.html" %} {%
+      endwith %}
+    </div>
+    {% endfor %}
+  </div>
+</div>

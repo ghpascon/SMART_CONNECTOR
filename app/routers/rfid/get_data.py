@@ -44,6 +44,7 @@ async def get_events():
 @router.get("/reader_state/{device}")
 async def get_reader_state(request: Request, device: str):
     if device not in devices.devices:
+        print("invalid")
         return -1
 
     reader = devices.devices[device]

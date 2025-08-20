@@ -3,5 +3,5 @@
   "TITLE": "SMARTX RFID",
   "OPEN_BROWSER": false,
   "BEEP": true,
-  "CLEAR_OLD_TAGS_INTERVAL": 30
+  "CLEAR_OLD_TAGS_INTERVAL": null
 }

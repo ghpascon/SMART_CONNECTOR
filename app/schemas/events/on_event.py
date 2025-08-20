@@ -15,10 +15,11 @@ class OnEvent:
             if tag_validado.epc in self.tags:
                 tag_exist = True
 
-            if tag_exist and tag_validado.rssi <= self.tags[tag_validado.epc].get(
-                "rssi"
-            ):
-                return
+            if tag_exist:
+                if tag_validado.rssi is None or self.tags[tag_validado.epc].get("rssi") is not None:
+                    return 
+                if tag_validado.rssi <= self.tags[tag_validado.epc].get("rssi"):
+                    return
 
             try:    
                 gtin = SGTIN.decode(tag_validado.epc).gtin
@@ -37,7 +38,7 @@ class OnEvent:
             self.tags[tag_validado.epc] = current_tag
             if verbose and not tag_exist:
                 print(f"[TAG] {current_tag}")
-                await self.on_tag_events(current_tag)
+            await self.on_tag_events(current_tag)
 
         except ValidationError as e:
             logging.error(f"❌ Tag inválida: {e.json()}")

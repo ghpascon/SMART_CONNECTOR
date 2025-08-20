@@ -11,6 +11,7 @@ class AddDevice:
         print(f"🔍 Adding device: {unique_name}")
         print(f"📡 Reader type: {reader}")
 
+
         ### R700
         if reader == "R700_IOT":
             from ..readers.RFID.R700_IOT import R700_IOT
@@ -28,6 +29,19 @@ class AddDevice:
             from ..readers.RFID.X714 import X714
 
             self.devices[unique_name] = X714(data, name)
+
+        ### ICARD
+        elif reader == "ICARD":
+            from ..readers.RFID.ICARD import ICARD
+
+            self.devices[unique_name] = ICARD(data, name)
+
+
+        ### SERIAL
+        elif reader == "SERIAL":
+            from ..readers.OTHERS.SERIAL import SERIAL
+
+            self.devices[unique_name] = SERIAL(data, name)
 
         ### TCP
         elif reader == "TCP":
