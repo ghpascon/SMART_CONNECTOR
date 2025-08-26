@@ -13,6 +13,7 @@ class OnEvent:
 
             tag_exist = False
             if tag_validado.epc in self.tags:
+                self.tags[tag_validado.epc]['timestamp'] = datetime.now()
                 tag_exist = True
 
             if tag_exist:
@@ -53,6 +54,10 @@ class OnEvent:
         await self.on_event(device, "inventory", False)
 
     async def on_event(self, device: str, event_type: str, event_data) -> None:
+        if event_type == "tag":
+            await self.on_tag(event_data)
+            return
+        
         timestamp = datetime.now()
         logging.info(
             f"[ EVENT ] - {timestamp} - {device} - {event_type} - {event_data}"

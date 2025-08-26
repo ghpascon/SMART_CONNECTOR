@@ -85,15 +85,11 @@ async def receive_tags(tags: Union[TagRequest, List[TagRequest]] = Body(...)):
     description="Receives either a single event or a list of events",
 )
 async def receive_events(events_received: Union[EventRequest, List[EventRequest]] = Body(...)):
-    print(events_received)
     events_received = events_received if isinstance(events_received, list) else [events_received]
     print(events_received)
     for event in events_received:
         event = event.model_dump()
-        if event.get("event_type") == "tag":
-            asyncio.create_task(events.on_tag(event.get("event_data")))
-        else:
-            asyncio.create_task(events.on_event(**event))
+        asyncio.create_task(events.on_event(**event))
     return {"msg": "success"}
 
 @router.post(

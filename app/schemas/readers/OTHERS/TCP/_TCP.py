@@ -60,7 +60,7 @@ class TCP(Helpers):
 
             await asyncio.sleep(3)
 
-    async def send_data(self, data: str, verbose=True):
+    async def write(self, data: str, verbose=True):
         if self.is_connected and self.writer:
             try:
                 self.writer.write(data.encode())

@@ -5,6 +5,8 @@ from .actions import Actions
 from .on_event import OnEvent
 
 from collections import deque
+from app.models.rfid import DbTag
+from app.db.database import database_engine
 
 
 class Events(OnEvent, Actions):
@@ -21,5 +23,23 @@ class Events(OnEvent, Actions):
         self.tags = {k: v for k, v in self.tags.items() if v.get("device") != device}
         logging.info(f"[ CLEAR ] -> Reader: {device}")
 
+    async def save_tags(self):
+        try:
+            async with database_engine.get_db() as db:
+                for tag in self.tags.values():
+                    current_tag = DbTag(
+                        **tag
+                    )
+
+                    if current_tag.epc is None:
+                        continue
+
+                    db.add(current_tag)
+
+                await db.commit()
+                logging.info("Tags salvas")
+
+        except Exception as e:
+            logging.error(f"Erro ao salvar tags: {e}")
 
 events = Events()
