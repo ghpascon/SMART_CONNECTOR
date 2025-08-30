@@ -34,19 +34,17 @@ class ICARD(asyncio.Protocol, OnReceive, RfidCommands):
         self.step = 0
         self.session = self.config.get("SESSION", 1)
 
-        #POWER
+        # POWER
         self.power = self.config.get("POWER", 26)
         if self.power > 26:
             self.power = 26
         if self.power < 10:
             self.power = 10
 
-
     def connection_made(self, transport):
         self.transport = transport
         logging.info("✅ Serial connection successfully established.")
         asyncio.create_task(self.loop())
-
 
     def data_received(self, data):
         now = time.time()
@@ -54,7 +52,11 @@ class ICARD(asyncio.Protocol, OnReceive, RfidCommands):
         self.last_byte_time = now
 
         # Cancela tarefa anterior de timeout
-        if hasattr(self, "_timeout_task") and self._timeout_task and not self._timeout_task.done():
+        if (
+            hasattr(self, "_timeout_task")
+            and self._timeout_task
+            and not self._timeout_task.done()
+        ):
             self._timeout_task.cancel()
 
         # Cria uma nova tarefa de timeout dentro da própria função
@@ -64,7 +66,9 @@ class ICARD(asyncio.Protocol, OnReceive, RfidCommands):
             if self.last_byte_time and (time.time() - self.last_byte_time) >= 0.3:
                 if self.rx_buffer:
                     self.rx_buffer.clear()
-                    logging.warning("⚠️ Buffer cleared due to 300ms timeout without receiving data.")
+                    logging.warning(
+                        "⚠️ Buffer cleared due to 300ms timeout without receiving data."
+                    )
 
         self._timeout_task = asyncio.create_task(timeout_clear())
 
@@ -111,11 +115,10 @@ class ICARD(asyncio.Protocol, OnReceive, RfidCommands):
             self.transport.write(to_send)
         else:
             logging.error("❌ Send attempt failed: connection not established.")
-            
+
     async def connect(self):
         """Serial connection/reconnection loop"""
         loop = asyncio.get_running_loop()
-
 
         while True:
             self.on_con_lost = asyncio.Event()
@@ -157,7 +160,6 @@ class ICARD(asyncio.Protocol, OnReceive, RfidCommands):
 
             print("⏳ Waiting 3 seconds before retrying...")
             await asyncio.sleep(3)
-
 
     def crc16(self, data: bytes, poly=0x8408):
         """CRC-16/CCITT-FALSE calculation (poly=0x8408)"""

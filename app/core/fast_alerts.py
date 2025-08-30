@@ -1,10 +1,21 @@
+import threading
+from typing import List, Dict
+
+
 class FastAlerts:
     def __init__(self):
-        self.alerts: list[dict] = []
+        self.alerts: List[Dict[str, str]] = []
+        self._lock = threading.Lock()
+        self._valid_styles = {
+            'alert-primary', 'alert-secondary', 'alert-success', 
+            'alert-danger', 'alert-warning', 'alert-info', 
+            'alert-light', 'alert-dark'
+        }
 
     def add_alert(self, detail: str, style: str = "alert-primary"):
         """
         Add an alert message with a specified Bootstrap style.
+        
         Parameters:
         - detail (str): The message content to display.
         - style (str): Bootstrap alert style. One of the following:
@@ -16,25 +27,34 @@ class FastAlerts:
             - 'alert-info'      (light blue for information)
             - 'alert-light'     (light background)
             - 'alert-dark'      (dark background)
+            
+        Note: If an invalid style is provided, defaults to 'alert-primary'.
         """
-        self.alerts.append({"detail": detail, "style": style})
+        # Valida o style, usa primary como fallback se inválido
+        if style not in self._valid_styles:
+            style = "alert-primary"
+        
+        with self._lock:
+            self.alerts.append({"detail": detail, "style": style})
 
-    def get_alerts(self) -> list[dict]:
+    def get_alerts(self) -> List[Dict[str, str]]:
         """
         Return all current alerts and clear the list.
 
         Returns:
-        - list[dict]: A list of dictionaries with 'detail' and 'style' keys.
+        - List[Dict[str, str]]: A list of dictionaries with 'detail' and 'style' keys.
         """
-        alerts = self.alerts
-        self.clear_alerts()
-        return alerts
+        with self._lock:
+            alerts = self.alerts.copy()
+            self.alerts.clear()
+            return alerts
 
     def clear_alerts(self):
         """
         Clear all stored alerts.
         """
-        self.alerts = []
+        with self._lock:
+            self.alerts.clear()
 
 
 fast_alerts = FastAlerts()

@@ -8,8 +8,10 @@ from app.db.database import database_engine
 from app.schemas.devices import devices
 from app.schemas.events import events
 
+
 async def connect_devices():
     await devices.create_connect_loop()
+
 
 async def periodic_clear_tags():
     while True:
@@ -35,18 +37,24 @@ async def periodic_clear_tags():
 
 
 async def daily_clear_db():
+    """Periodically clears old logs and database records at midnight (UTC-3)."""
     while True:
-        await logger_manager.clear_old_logs()
-        await database_engine.clear_db(settings.data.get("STORAGE_DAYS"))
+        try:
+            await logger_manager.clear_old_logs()
+            await database_engine.clear_db(settings.data.get("STORAGE_DAYS"))
 
-        # Calcula a próxima meia-noite em horário de Brasília (UTC-3)
-        now = datetime.now(timezone(timedelta(hours=-3)))
-        next_run = (now + timedelta(days=1)).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        wait_seconds = (next_run - now).total_seconds()
+            # Calculate the next midnight in Brasília time (UTC-3)
+            now = datetime.now(timezone(timedelta(hours=-3)))
+            next_run = (now + timedelta(days=1)).replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            wait_seconds = (next_run - now).total_seconds()
 
-        logging.info(
-            f"Next DB clear scheduled in {wait_seconds/3600:.2f} hours (Brasília time)"
-        )
-        await asyncio.sleep(wait_seconds)
+            logging.info(
+                f"Next DB clear scheduled in {wait_seconds/3600:.2f} hours (Brasília time)"
+            )
+            await asyncio.sleep(wait_seconds)
+        except Exception as e:
+            # Log any unexpected errors and retry after 1 minute
+            logging.error(f"Error in daily_clear_db: {e}")
+            await asyncio.sleep(60)

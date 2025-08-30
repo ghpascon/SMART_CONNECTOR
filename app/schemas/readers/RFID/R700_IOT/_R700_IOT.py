@@ -60,7 +60,6 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
                 if self.config.get("START_READING"):
                     self.is_reading = True
 
-
                 for i in range(1, 4):
                     await self.set_gpo({"gpo_pin": i, "state": False})
 
@@ -120,4 +119,3 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
                 continue
 
         await self.send_write_command(all_commands)
-

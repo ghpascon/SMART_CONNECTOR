@@ -13,6 +13,7 @@ from app.core.config import settings
 router_prefix = get_prefix_from_path(__file__)
 router = APIRouter(prefix=router_prefix, tags=[router_prefix])
 
+
 @router.get(
     "/get_actions_example",
     responses=rfid_actions_responses,

@@ -40,7 +40,7 @@ class OnReceive:
                 "ant": 1,
                 "rssi": 0,
             }
-            asyncio.create_task(events.on_tag(current_tag))            
+            asyncio.create_task(events.on_tag(current_tag))
 
         elif data.startswith("#set_cmd:"):
             logging.info(f"CONFIG -> {data[data.index(':')+1:]}")

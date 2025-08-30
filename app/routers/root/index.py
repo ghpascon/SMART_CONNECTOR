@@ -14,6 +14,7 @@ async def index(request: Request):
         {"request": request, "title": settings.data.get("TITLE", "SMARTX")},
     )
 
+
 @router.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
     return get_swagger_ui_html(
@@ -21,5 +22,5 @@ async def custom_swagger_ui_html():
         title=settings.data.get("TITLE", "SMARTX") + " - Docs",
         swagger_js_url="/static/docs/swagger-ui-bundle.js",
         swagger_css_url="/static/docs/swagger-ui.css",
-        swagger_favicon_url="/static/images/logo.png"
+        swagger_favicon_url="/static/images/logo.png",
     )

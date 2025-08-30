@@ -51,17 +51,19 @@ def get_prefix_from_path(current_file: str, base_dir: str = "routers") -> str:
 
 # Include all routers dynamically
 def include_all_routers(current_path, app):
-    routes_path = os.path.join(os.path.dirname(__file__), get_path(current_path))
-
-    for filename in os.listdir(routes_path):
-        if not filename == "__pycache__" and not "." in filename:
-            include_all_routers(current_path + "/" + filename, app)
-        if filename.endswith(".py") and filename != "__init__.py":
-            module_name = filename[:-3]
-            file_path = os.path.join(routes_path, filename)
+    """
+    Recursively include all routers from the given directory into the app.
+    """
+    routes_path = get_path(current_path)
+    for entry in Path(routes_path).iterdir():
+        if entry.is_dir() and entry.name != "__pycache__":
+            include_all_routers(str(Path(current_path) / entry.name), app)
+        elif entry.is_file() and entry.suffix == ".py" and entry.name != "__init__.py":
+            module_name = entry.stem
+            file_path = entry
 
             spec = importlib.util.spec_from_file_location(
-                f"app.routes.{module_name}", file_path
+                f"app.routers.{module_name}", str(file_path)
             )
             module = importlib.util.module_from_spec(spec)
             try:
@@ -71,8 +73,35 @@ def include_all_routers(current_path, app):
                     app.include_router(
                         module.router, include_in_schema=prefix.startswith("/api")
                     )
-                    logging.info(f"✅ Route loaded: {module_name}")
+                    # Show path relative to 'routers' directory
+                    try:
+                        routers_dir = Path(routes_path).resolve()
+                        relative_path = file_path.resolve().relative_to(
+                            routers_dir.parent
+                        )
+                    except Exception:
+                        relative_path = file_path.name
+                    logging.info(f"✅ Route loaded: {relative_path}")
                 else:
-                    logging.warning(f"⚠️  File {filename} does not contain a 'router'")
+                    logging.warning(
+                        f"⚠️  File {relative_path} does not contain a 'router'"
+                    )
             except Exception as e:
-                logging.error(f"❌ Error loading {filename}: {e}")
+                logging.error(f"❌ Error loading {relative_path}: {e}")
+
+def load_swagger_description(swagger_file_path: str) -> str:
+    """
+    Loads the Swagger markdown description from file.
+    
+    Returns:
+        The markdown content as a string, or a default message if file not found
+    """
+    try:
+        with open(swagger_file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        logging.warning(f"{swagger_file_path} not found. Using default description.")
+        return "API documentation not found."
+    except Exception as e:
+        logging.error(f"Error loading Swagger documentation: {e}", exc_info=True)
+        return "Error loading API documentation."

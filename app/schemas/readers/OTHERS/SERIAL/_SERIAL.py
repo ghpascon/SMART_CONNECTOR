@@ -30,20 +30,22 @@ class SERIAL(asyncio.Protocol, OnReceive):
         self.is_connected = False
         self.is_reading = False
 
-
     def connection_made(self, transport):
         self.transport = transport
         logging.info("✅ Serial connection successfully established.")
         self.is_connected = True
 
-
     def data_received(self, data):
         now = time.time()
-        self.rx_buffer += data 
+        self.rx_buffer += data
         self.last_byte_time = now
 
         # Cancela tarefa anterior de timeout
-        if hasattr(self, "_timeout_task") and self._timeout_task and not self._timeout_task.done():
+        if (
+            hasattr(self, "_timeout_task")
+            and self._timeout_task
+            and not self._timeout_task.done()
+        ):
             self._timeout_task.cancel()
 
         # Cria nova tarefa de timeout
@@ -52,14 +54,20 @@ class SERIAL(asyncio.Protocol, OnReceive):
             if self.last_byte_time and (time.time() - self.last_byte_time) >= 0.3:
                 if self.rx_buffer:
                     self.rx_buffer.clear()
-                    logging.warning("⚠️ Buffer cleared due to 300ms timeout without receiving data.")
+                    logging.warning(
+                        "⚠️ Buffer cleared due to 300ms timeout without receiving data."
+                    )
 
         self._timeout_task = asyncio.create_task(timeout_clear())
 
         # Processa mensagens completas
         while b"\n" in self.rx_buffer or b"\r" in self.rx_buffer:
             # Encontra posição do primeiro delimitador
-            positions = [p for p in [self.rx_buffer.find(b"\n"), self.rx_buffer.find(b"\r")] if p != -1]
+            positions = [
+                p
+                for p in [self.rx_buffer.find(b"\n"), self.rx_buffer.find(b"\r")]
+                if p != -1
+            ]
             pos = min(positions)
 
             # Extrai mensagem em bytes e converte para string
@@ -67,7 +75,7 @@ class SERIAL(asyncio.Protocol, OnReceive):
             message = message_bytes.decode(errors="ignore").strip("\r\n")
 
             # Remove mensagem do buffer
-            self.rx_buffer = self.rx_buffer[pos+1:]
+            self.rx_buffer = self.rx_buffer[pos + 1 :]
 
             if message:
                 asyncio.create_task(self.on_receive(message))
@@ -102,11 +110,10 @@ class SERIAL(asyncio.Protocol, OnReceive):
             self.transport.write(to_send)
         else:
             logging.error("❌ Send attempt failed: connection not established.")
-            
+
     async def connect(self):
         """Serial connection/reconnection loop"""
         loop = asyncio.get_running_loop()
-
 
         while True:
             self.on_con_lost = asyncio.Event()
@@ -148,7 +155,6 @@ class SERIAL(asyncio.Protocol, OnReceive):
 
             print("⏳ Waiting 3 seconds before retrying...")
             await asyncio.sleep(3)
-
 
     def crc16(self, data: bytes, poly=0x8408):
         """CRC-16/CCITT-FALSE calculation (poly=0x8408)"""

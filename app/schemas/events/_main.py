@@ -27,9 +27,7 @@ class Events(OnEvent, Actions):
         try:
             async with database_engine.get_db() as db:
                 for tag in self.tags.values():
-                    current_tag = DbTag(
-                        **tag
-                    )
+                    current_tag = DbTag(**tag)
 
                     if current_tag.epc is None:
                         continue
@@ -41,5 +39,6 @@ class Events(OnEvent, Actions):
 
         except Exception as e:
             logging.error(f"Erro ao salvar tags: {e}")
+
 
 events = Events()

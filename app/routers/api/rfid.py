@@ -10,7 +10,13 @@ from app.routers.rfid.commands import (
     set_gpo,
 )
 from app.schemas.api.device import device_responses, validate_device, state_responses
-from app.schemas.api.rfid import SetGpoRequest, gpo_responses, rfid_base_responses, TagRequest, EventRequest
+from app.schemas.api.rfid import (
+    SetGpoRequest,
+    gpo_responses,
+    rfid_base_responses,
+    TagRequest,
+    EventRequest,
+)
 from app.schemas.devices import devices
 from app.schemas.events import events
 import asyncio
@@ -64,6 +70,7 @@ async def api_clear_all_tags():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post(
     "/receive_tags",
     summary="Receive tags from external devices",
@@ -73,24 +80,30 @@ async def receive_tags(tags: Union[TagRequest, List[TagRequest]] = Body(...)):
     tags = tags if isinstance(tags, list) else [tags]
     for tag in tags:
         try:
-            await events.on_tag(tag.model_dump()) 
+            await events.on_tag(tag.model_dump())
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e)) 
+            raise HTTPException(status_code=400, detail=str(e))
 
     return {"msg": "success"}
+
 
 @router.post(
     "/receive_events",
     summary="Receive events from external devices",
     description="Receives either a single event or a list of events",
 )
-async def receive_events(events_received: Union[EventRequest, List[EventRequest]] = Body(...)):
-    events_received = events_received if isinstance(events_received, list) else [events_received]
+async def receive_events(
+    events_received: Union[EventRequest, List[EventRequest]] = Body(...),
+):
+    events_received = (
+        events_received if isinstance(events_received, list) else [events_received]
+    )
     print(events_received)
     for event in events_received:
         event = event.model_dump()
         asyncio.create_task(events.on_event(**event))
     return {"msg": "success"}
+
 
 @router.post(
     "/set_gpo/{device}",

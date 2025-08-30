@@ -1,29 +1,50 @@
 import os
 import json
-from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-from contextlib import asynccontextmanager
-from .session import Base
-from datetime import datetime, timedelta, timezone
-from sqlalchemy import delete
-from app import models  # Garante que os modelos estejam importados
-import logging
-from sqlalchemy.orm import DeclarativeMeta
 import csv
 import zipfile
+import logging
+from datetime import datetime, timedelta, timezone
+from contextlib import asynccontextmanager
 from io import StringIO, BytesIO
-from sqlalchemy.pool import NullPool
+from typing import Dict, Any, Optional, Union, List
 
+from sqlalchemy import create_engine, delete
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker, DeclarativeMeta
+from sqlalchemy.pool import NullPool
+from sqlalchemy.future import select
 from fastapi import Response
 from fastapi.responses import StreamingResponse
-from sqlalchemy.future import select
+
+from .session import Base
+from app import models  # Ensure models are imported
+
+
+# Constants
+DEFAULT_CONFIG_PATH = "config/actions.json"
+DEFAULT_POOL_SIZE = 10
+DEFAULT_MAX_OVERFLOW = 20
+DEFAULT_REPORT_FILENAME = "report.zip"
+
+# Database driver mappings
+SYNC_DRIVER_MAPPING = {
+    "mysql": "pymysql",
+    "postgresql": "psycopg2",
+    "sqlite": None,
+}
 
 
 class DatabaseEngine:
-    def __init__(self):
-        self.database_url = None
-        self.sync_url = None
+    """
+    Database engine manager for handling both sync and async database operations.
+    
+    This class manages SQLAlchemy engines, sessions, and provides utilities for
+    database operations like clearing old records and generating reports.
+    """
+    def __init__(self) -> None:
+        """Initialize DatabaseEngine with default values and attempt to connect."""
+        self.database_url: Optional[str] = None
+        self.sync_url: Optional[str] = None
         self.sync_engine = None
         self.async_engine = None
         self.SessionLocal = None
@@ -31,37 +52,56 @@ class DatabaseEngine:
         result = self._initialize_engines_and_session()
         if isinstance(result, dict) and "error" in result:
             logging.error(
-                f"[DatabaseEngine.__init__] Erro ao inicializar: {result['error']}"
+                f"[DatabaseEngine.__init__] Failed to initialize: {result['error']}"
             )
 
-    def _load_database_url(self, path="config/actions.json"):
+    def _load_database_url(self, path: str = DEFAULT_CONFIG_PATH) -> Optional[str]:
+        """
+        Load database URL from configuration file.
+        
+        Args:
+            path: Path to configuration file
+            
+        Returns:
+            Database URL string or None if not found/invalid
+        """
         try:
             if not os.path.exists(path):
                 logging.error(
-                    f"[DatabaseEngine._load_database_url] Arquivo de configuração não encontrado: {path}"
+                    f"[DatabaseEngine._load_database_url] Configuration file not found: {path}"
                 )
                 return None
+                
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
+                
             url = data.get("DATABASE_URL")
             if not url:
                 logging.error(
-                    f"[DatabaseEngine._load_database_url] 'DATABASE_URL' não encontrada no arquivo: {path}"
+                    f"[DatabaseEngine._load_database_url] 'DATABASE_URL' not found in file: {path}"
                 )
                 return None
+                
             return url
+            
         except json.JSONDecodeError as e:
             logging.error(
-                f"[DatabaseEngine._load_database_url] Erro ao decodificar JSON do arquivo {path}: {e}"
+                f"[DatabaseEngine._load_database_url] JSON decode error in file {path}: {e}"
             )
             return None
         except Exception as e:
             logging.error(
-                f"[DatabaseEngine._load_database_url] Erro inesperado ao carregar DATABASE_URL: {e}"
+                f"[DatabaseEngine._load_database_url] Unexpected error loading DATABASE_URL: {e}"
             )
             return None
 
-    def _initialize_engines_and_session(self):
+    def _initialize_engines_and_session(self) -> Union[bool, Dict[str, str]]:
+        """
+        Initialize database engines and session factory.
+        
+        Returns:
+            True if successful, dict with error message if failed
+        """
         try:
             self.database_url = self._load_database_url()
             if not self.database_url:
@@ -69,6 +109,7 @@ class DatabaseEngine:
                 logging.error(f"[DatabaseEngine._initialize_engines_and_session] {msg}")
                 return {"error": msg}
 
+            # Parse database dialect and driver
             dialect_plus_driver = self.database_url.split("://")[0]
             if "+" in dialect_plus_driver:
                 dialect, async_driver = dialect_plus_driver.split("+")
@@ -76,12 +117,10 @@ class DatabaseEngine:
                 dialect = dialect_plus_driver
                 async_driver = None
 
-            default_sync_driver = {
-                "mysql": "pymysql",
-                "postgresql": "psycopg2",
-                "sqlite": None,
-            }.get(dialect, None)
+            # Get corresponding sync driver
+            default_sync_driver = SYNC_DRIVER_MAPPING.get(dialect, None)
 
+            # Build sync URL
             if default_sync_driver:
                 self.sync_url = self.database_url.replace(
                     f"+{async_driver}", f"+{default_sync_driver}"
@@ -89,24 +128,25 @@ class DatabaseEngine:
             else:
                 self.sync_url = self.database_url.replace(f"+{async_driver}", "")
 
+            # Create sync engine
             self.sync_engine = create_engine(self.sync_url, echo=False)
 
-            # SQLite does not support pool parameters
+            # Create async engine with appropriate configuration
             if dialect == "sqlite":
+                # SQLite does not support pool parameters
                 self.async_engine = create_async_engine(
-                    self.database_url,
-                    echo=False,
-                    poolclass=NullPool
+                    self.database_url, echo=False, poolclass=NullPool
                 )
             else:
                 self.async_engine = create_async_engine(
                     self.database_url,
                     echo=False,
-                    pool_size=10,
-                    max_overflow=20,
+                    pool_size=DEFAULT_POOL_SIZE,
+                    max_overflow=DEFAULT_MAX_OVERFLOW,
                     pool_pre_ping=True,
                 )
 
+            # Create session factory
             self.SessionLocal = sessionmaker(
                 bind=self.async_engine,
                 class_=AsyncSession,
@@ -124,64 +164,100 @@ class DatabaseEngine:
             logging.error(
                 f"[DatabaseEngine._initialize_engines_and_session] Failed to initialize engines and session: {e}"
             )
-            self.database_url = None
-            self.sync_url = None
-            self.sync_engine = None
-            self.async_engine = None
-            self.SessionLocal = None
+            self._reset_engines()
             return {"error": str(e)}
-        
+    
+    def _reset_engines(self) -> None:
+        """Reset all engine and session attributes to None."""
+        self.database_url = None
+        self.sync_url = None
+        self.sync_engine = None
+        self.async_engine = None
+        self.SessionLocal = None
 
-    def create_tables(self):
+    def create_tables(self) -> None:
+        """
+        Create database tables if they don't exist.
+        
+        Uses sync engine to create tables. Logs errors but doesn't raise exceptions.
+        """
         if self.sync_engine is None:
             logging.error(
-                "[DatabaseEngine.create_tables] sync_engine não inicializada. Ignorando criação de tabelas."
+                "[DatabaseEngine.create_tables] Sync engine not initialized. Skipping table creation."
             )
             return
+            
         try:
             Base.metadata.create_all(bind=self.sync_engine)
-            logging.info("[DatabaseEngine.create_tables] Tabelas criadas ou já existentes.")
+            logging.info(
+                "[DatabaseEngine.create_tables] Tables created or already exist."
+            )
         except Exception as e:
-            logging.error(f"[DatabaseEngine.create_tables] Erro ao criar tabelas: {e}")
-            # NÃO levanta exceção
+            logging.error(f"[DatabaseEngine.create_tables] Error creating tables: {e}")
+            # Don't raise exception to allow application to continue
 
-    def reload_database_url(self, new_url: str):
+    def reload_database_url(self, new_url: str) -> Union[bool, Dict[str, str]]:
+        """
+        Reload database configuration with a new URL.
+        
+        Args:
+            new_url: New database URL to use
+            
+        Returns:
+            True if successful, dict with error message if failed
+        """
         try:
             self.database_url = new_url
             result = self._initialize_engines_and_session()
             if result is True:
                 logging.info(
-                    "[DatabaseEngine.reload_database_url] URL do banco de dados recarregada com sucesso."
+                    "[DatabaseEngine.reload_database_url] Database URL reloaded successfully."
                 )
                 return True
             else:
-                # result contém o dict {"error": ...}
+                # result contains the dict {"error": ...}
                 logging.error(f"[DatabaseEngine.reload_database_url] {result['error']}")
                 return result
         except Exception as e:
             logging.error(
-                f"[DatabaseEngine.reload_database_url] Erro ao recarregar DATABASE_URL: {e}"
+                f"[DatabaseEngine.reload_database_url] Error reloading DATABASE_URL: {e}"
             )
             return {"error": str(e)}
 
     @asynccontextmanager
     async def get_db(self):
+        """
+        Async context manager for database sessions.
+        
+        Yields:
+            AsyncSession or None if session creation fails
+        """
         if self.SessionLocal is None:
             logging.error(
-                "[DatabaseEngine.get_db] Sessão não inicializada, não é possível obter conexão com o banco."
+                "[DatabaseEngine.get_db] Session not initialized, cannot get database connection."
             )
             yield None
             return
+            
         try:
             async with self.SessionLocal() as db:
                 yield db
         except Exception as e:
             logging.error(
-                f"[DatabaseEngine.get_db] Erro ao obter sessão do banco de dados: {e}"
+                f"[DatabaseEngine.get_db] Error getting database session: {e}"
             )
             yield None
 
-    async def clear_db(self, days):
+    async def clear_db(self, days: int) -> Dict[str, Any]:
+        """
+        Clear old records from database tables.
+        
+        Args:
+            days: Number of days to keep (older records will be deleted)
+            
+        Returns:
+            Dict with success status and deleted tables list, or error message
+        """
         if self.SessionLocal is None:
             logging.error(
                 "[DatabaseEngine.clear_db] Session not initialized, operation ignored."
@@ -196,13 +272,15 @@ class DatabaseEngine:
                     )
                     return {"error": "Session returned None"}
 
+                # Calculate cutoff date
                 limit_date = datetime.now(timezone.utc) - timedelta(days=days)
                 limit_date = limit_date.replace(
                     hour=0, minute=0, second=0, microsecond=0
                 )
 
-                deleted_tables = []
+                deleted_tables: List[str] = []
 
+                # Clear records from all tables with timestamp column
                 for cls in Base.__subclasses__():
                     if isinstance(cls, DeclarativeMeta) and hasattr(cls, "timestamp"):
                         try:
@@ -221,39 +299,51 @@ class DatabaseEngine:
                 return {"success": True, "deleted_tables": deleted_tables}
 
         except Exception as e:
-            logging.error(f"[DatabaseEngine.clear_db] Error while clearing database: {e}")
+            logging.error(
+                f"[DatabaseEngine.clear_db] Error while clearing database: {e}"
+            )
             return {"error": str(e)}
 
-    async def get_report(self):
+    async def get_report(self) -> Union[StreamingResponse, Response]:
+        """
+        Generate a ZIP file containing CSV exports of all database tables.
+        
+        Returns:
+            StreamingResponse with ZIP file or Response with error message
+        """
         try:
             async with self.get_db() as db:
                 if db is None:
-                    logging.error("[get_report] Database session not available")
+                    logging.error("[DatabaseEngine.get_report] Database session not available")
                     return Response(
                         content="Database session unavailable", status_code=503
                     )
 
                 zip_buffer = BytesIO()
                 table_count = 0
-                exported_tables = []
+                exported_tables: List[str] = []
 
                 with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                    # Export all database tables
                     for cls in Base.__subclasses__():
                         if isinstance(cls, DeclarativeMeta):
                             table_name = getattr(cls, "__tablename__", cls.__name__)
                             try:
-                                logging.info(f"[get_report] Processing table: {table_name}")
+                                logging.info(
+                                    f"[DatabaseEngine.get_report] Processing table: {table_name}"
+                                )
                                 result = await db.execute(select(cls))
                                 rows = result.scalars().all()
 
+                                # Create CSV content
                                 csv_buffer = StringIO()
                                 writer = csv.writer(csv_buffer)
 
-                                # Header
+                                # Write header
                                 headers = [col.name for col in cls.__table__.columns]
                                 writer.writerow(headers)
 
-                                # Data rows
+                                # Write data rows
                                 for row in rows:
                                     writer.writerow(
                                         [
@@ -262,37 +352,41 @@ class DatabaseEngine:
                                         ]
                                     )
 
+                                # Add CSV to ZIP
                                 csv_buffer.seek(0)
                                 zip_file.writestr(
                                     f"{table_name}.csv", csv_buffer.read()
                                 )
+                                
                                 logging.info(
-                                    f"[get_report] Exported {len(rows)} rows from table: {table_name}"
+                                    f"[DatabaseEngine.get_report] Exported {len(rows)} rows from table: {table_name}"
                                 )
                                 table_count += 1
                                 exported_tables.append(table_name)
 
                             except Exception as table_error:
                                 logging.error(
-                                    f"[get_report] Failed to export table {table_name}: {table_error}"
+                                    f"[DatabaseEngine.get_report] Failed to export table {table_name}: {table_error}"
                                 )
 
                 if table_count == 0:
-                    logging.info("[get_report] No tables were exported. ZIP will be empty.")
+                    logging.info(
+                        "[DatabaseEngine.get_report] No tables were exported. ZIP will be empty."
+                    )
 
                 zip_buffer.seek(0)
                 logging.info(
-                    f"[get_report] Report generation completed. {table_count} tables exported: {exported_tables}"
+                    f"[DatabaseEngine.get_report] Report generation completed. {table_count} tables exported: {exported_tables}"
                 )
 
                 return StreamingResponse(
                     zip_buffer,
                     media_type="application/zip",
-                    headers={"Content-Disposition": "attachment; filename=report.zip"},
+                    headers={"Content-Disposition": f"attachment; filename={DEFAULT_REPORT_FILENAME}"},
                 )
 
         except Exception as e:
-            logging.error(f"[get_report] Failed to generate reports: {e}")
+            logging.error(f"[DatabaseEngine.get_report] Failed to generate reports: {e}")
             return Response(content=f"Failed to get reports: {str(e)}", status_code=500)
 
 

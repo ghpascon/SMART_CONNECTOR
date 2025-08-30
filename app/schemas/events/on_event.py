@@ -13,16 +13,19 @@ class OnEvent:
 
             tag_exist = False
             if tag_validado.epc in self.tags:
-                self.tags[tag_validado.epc]['timestamp'] = datetime.now()
+                self.tags[tag_validado.epc]["timestamp"] = datetime.now()
                 tag_exist = True
 
             if tag_exist:
-                if tag_validado.rssi is None or self.tags[tag_validado.epc].get("rssi") is not None:
-                    return 
+                if (
+                    tag_validado.rssi is None
+                    or self.tags[tag_validado.epc].get("rssi") is not None
+                ):
+                    return
                 if tag_validado.rssi <= self.tags[tag_validado.epc].get("rssi"):
                     return
 
-            try:    
+            try:
                 gtin = SGTIN.decode(tag_validado.epc).gtin
             except:
                 gtin = ""
@@ -57,7 +60,7 @@ class OnEvent:
         if event_type == "tag":
             await self.on_tag(event_data)
             return
-        
+
         timestamp = datetime.now()
         logging.info(
             f"[ EVENT ] - {timestamp} - {device} - {event_type} - {event_data}"

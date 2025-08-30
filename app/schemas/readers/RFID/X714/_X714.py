@@ -36,7 +36,6 @@ class X714(asyncio.Protocol, OnReceive, RfidCommands):
         self.is_connected = True
         logging.info("✅ Serial connection successfully established.")
         asyncio.create_task(self.config_reader())
-        
 
     def data_received(self, data):
         self.rx_buffer += data

@@ -11,6 +11,7 @@ from app.models.rfid import DbEvent, DbTag
 from app.core.indicator import beep
 from app.core.config import settings
 
+
 class Actions:
     async def get_actions_example(self, path="config/examples/actions.json"):
         try:
@@ -52,7 +53,7 @@ class Actions:
         # XTRACK TAG
         xtrack_post = self.actions.get("XTRACK_URL")
         if xtrack_post:
-            asyncio.create_task(self.post_tag_xtrack(tag, xtrack_post))            
+            asyncio.create_task(self.post_tag_xtrack(tag, xtrack_post))
 
         # BEEP
         if settings.data.get("BEEP", False):
@@ -93,7 +94,9 @@ class Actions:
                         <cmpl>STATE=|DATA1=|DATA2=|DATA3=|DATA4=|DATA5=|</cmpl>
                         </msg>"""
             async with aiohttp.ClientSession() as session:
-                async with session.post(endpoint, data=payload, headers={"Content-Type": "application/xml"}) as response:
+                async with session.post(
+                    endpoint, data=payload, headers={"Content-Type": "application/xml"}
+                ) as response:
                     pass
         except Exception as e:
             logging.info(f"Erro ao enviar tag: {e}")
@@ -112,7 +115,9 @@ class Actions:
 
         # DATABASE EVENT
         if self.actions.get("DATABASE_URL") is not None:
-            asyncio.create_task(self.event_db(device, event_type, event_data, timestamp))
+            asyncio.create_task(
+                self.event_db(device, event_type, event_data, timestamp)
+            )
 
         # POST EVENT
         http_post = self.actions.get("HTTP_POST")

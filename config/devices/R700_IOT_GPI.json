@@ -1,6 +1,6 @@
 {
   "READER": "R700_IOT",
-  "CONNECTION": "impinj-15-d4-2d",
+  "CONNECTION": "impinj-14-a1-60",
   "START_READING": false,
   "READING_CONFIG": {
     "antennaConfigs": [
@@ -10,53 +10,23 @@
         "fastId": "enabled",
         "inventorySearchMode": "dual-target",
         "inventorySession": 1,
-        "receiveSensitivityDbm": -80,
-        "rfMode": 1002,
-        "transmitPowerCdbm": 3300
-      },
-      {
-        "antennaPort": 2,
-        "estimatedTagPopulation": 16,
-        "fastId": "enabled",
-        "inventorySearchMode": "dual-target",
-        "inventorySession": 1,
-        "receiveSensitivityDbm": -80,
-        "rfMode": 1002,
-        "transmitPowerCdbm": 3300
-      },
-      {
-        "antennaPort": 3,
-        "estimatedTagPopulation": 16,
-        "fastId": "enabled",
-        "inventorySearchMode": "dual-target",
-        "inventorySession": 1,
-        "receiveSensitivityDbm": -80,
-        "rfMode": 1002,
-        "transmitPowerCdbm": 3300
-      },
-      {
-        "antennaPort": 4,
-        "estimatedTagPopulation": 16,
-        "fastId": "enabled",
-        "inventorySearchMode": "dual-target",
-        "inventorySession": 1,
-        "receiveSensitivityDbm": -80,
-        "rfMode": 1002,
-        "transmitPowerCdbm": 3300
+        "receiveSensitivityDbm": -60,
+        "rfMode": 1,
+        "transmitPowerCdbm": 3000
       }
     ],
     "startTriggers": [
       {
         "gpiTransitionEvent": {
           "gpi": 1,
-          "transition": "high-to-low"
+          "transition": "low-to-high"
         }
       }
     ],
     "stopTriggers": [
       {
         "gpiTransitionEvent": {
-          "gpi": 1,
+          "gpi": 2,
           "transition": "low-to-high"
         }
       }

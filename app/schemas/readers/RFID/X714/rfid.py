@@ -1,5 +1,6 @@
 import asyncio
 
+
 class RfidCommands:
     async def start_inventory(self):
         self.write("#READ:ON")
@@ -44,10 +45,10 @@ class RfidCommands:
         set_cmd = set_cmd.lower()
         set_cmd = set_cmd.replace("true", "on").replace("false", "off")
         self.write(set_cmd)
-        if self.config.get('START_READING', False):
+        if self.config.get("START_READING", False):
             await self.start_inventory()
             self.is_reading = True
-        else: 
+        else:
             await self.stop_inventory()
             self.is_reading = False
 

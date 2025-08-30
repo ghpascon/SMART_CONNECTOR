@@ -4,6 +4,7 @@ from typing import Optional, Any
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 import json
 
+
 def load_example_from_json(path: str) -> dict:
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -11,7 +12,8 @@ def load_example_from_json(path: str) -> dict:
     except Exception as e:
         print(f"Erro ao carregar JSON de exemplo: {e}")
         return {}
-    
+
+
 class TagRequest(BaseModel):
     device: str = Field(default="DEVICE_01")
     epc: str = Field(default="000000000000000000000001")
@@ -26,7 +28,9 @@ class TagRequest(BaseModel):
         if len(v) != 24:
             raise ValueError(f"{info.field_name} must have exactly 24 characters")
         if not re.fullmatch(r"[0-9a-fA-F]{24}", v):
-            raise ValueError(f"{info.field_name} must contain only hexadecimal characters (0-9, a-f)")
+            raise ValueError(
+                f"{info.field_name} must contain only hexadecimal characters (0-9, a-f)"
+            )
         return v
 
     @field_validator("rssi")
@@ -40,7 +44,7 @@ class TagRequest(BaseModel):
     @field_validator("ant")
     def validate_ant(cls, v):
         return v if v is not None else 1
-    
+
 
 class TagRequestSimulator(BaseModel):
     device: Optional[str] = Field("DEVICE_01")
@@ -67,9 +71,7 @@ class ActionsRequest(BaseModel):
     DATABASE_URL: Optional[str] = Field(
         "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx"
     )
-    XTRACK_URL: Optional[str] = Field(
-        "https://192.168.0.100:6100/req"
-    )
+    XTRACK_URL: Optional[str] = Field("https://192.168.0.100:6100/req")
     STORAGE_DAYS: int = Field(0)
     LOG_PATH: str = Field("Logs")
 
