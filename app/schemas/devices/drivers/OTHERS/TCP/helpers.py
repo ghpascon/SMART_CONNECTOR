@@ -1,17 +1,22 @@
 import asyncio
 import logging
 
-from ....events import events
+from app.schemas.events import events
 
 
 class Helpers:
     async def monitor_connection(self):
         while self.is_connected:
-            await asyncio.sleep(1)
-            if self.writer.is_closing():
+            await asyncio.sleep(3)
+            if (
+                (self.writer and self.writer.is_closing()) or
+                (self.reader and self.reader.at_eof())
+            ):                
                 self.is_connected = False
                 logging.info("[DISCONNECTED] Socket closed.")
                 break
+
+            await self.write("ping", verbose=False)
 
     async def receive_data(self):
         buffer = ""

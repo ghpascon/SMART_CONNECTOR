@@ -26,23 +26,29 @@ class ReaderHelpers:
 
     async def post_to_reader(self, session, endpoint, payload=None, method="post", timeout=3):
         try:
+            client_timeout = aiohttp.ClientTimeout(total=timeout)
+
             if session is None:
                 async with aiohttp.ClientSession(
-                    auth=self.auth, connector=aiohttp.TCPConnector(ssl=False)
+                    auth=self.auth,
+                    connector=aiohttp.TCPConnector(ssl=False)
                 ) as session:
-                    await self.post_to_reader(session, endpoint, payload, method, timeout)
-                    return
+                    return await self.post_to_reader(session, endpoint, payload, method, timeout)
+
             if method == "post":
-                async with session.post(endpoint, json=payload, timeout=timeout) as response:
+                async with session.post(endpoint, json=payload, timeout=client_timeout) as response:
                     print(f"{endpoint} -> {response.status}")
                     return response.status == 204
+
             elif method == "put":
-                async with session.put(endpoint, json=payload, timeout=timeout) as response:
+                async with session.put(endpoint, json=payload, timeout=client_timeout) as response:
                     print(f"{endpoint} -> {response.status}")
                     return response.status == 204
+
         except Exception as e:
             logging.error(f"Error posting to {endpoint}: {e}")
             return False
+        
 
     async def get_tag_list(self, session):
         try:

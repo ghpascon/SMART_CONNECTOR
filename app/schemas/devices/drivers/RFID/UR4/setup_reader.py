@@ -125,6 +125,7 @@ class SetupReader:
             # END SETUP
             elif not self.wait_answer:
                 self.setup = True
+
                 logging.info(f"[SETUP] ✅ Setup Concluido")
                 if self.config.get("START_READING"):
                     await self.start_inventory()
@@ -142,6 +143,7 @@ class SetupReader:
             self.setup_step = 0
             self.setup = False
             self.wait_answer = False
+            self.is_connected = False
 
     async def setup_region(self):
         await self.send_data([0xA5, 0x5A, 0x00, 0x0A, 0x2C, 0x01, 0x3C, 0x00, 0x0D, 0x0A])

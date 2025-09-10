@@ -3,7 +3,7 @@ import logging
 
 from app.schemas.validators.tag import TagSchema
 
-from ....events import events
+from app.schemas.events import events
 
 
 class OnReceive:

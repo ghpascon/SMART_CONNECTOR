@@ -61,5 +61,10 @@ class FastAlerts:
         with self._lock:
             self.alerts.clear()
 
+    def add_success(self, detail: str):
+        self.add_alert(detail=detail, style="alert-success")
+
+    def add_error(self, detail: str):
+        self.add_alert(detail=detail, style="alert-danger")
 
 fast_alerts = FastAlerts()

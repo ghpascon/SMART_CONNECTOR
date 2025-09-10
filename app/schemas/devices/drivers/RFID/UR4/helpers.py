@@ -50,10 +50,19 @@ class ReaderHelpers:
 
     async def get_gpi_state(self):
         while True:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.2)
             if not self.setup:
                 continue
             await self.send_data([0xA5, 0x5A, 0x00, 0x09, 0xA1, 0x0A, 0x00, 0x0D, 0x0A], False)
+
+    async def prevent_gpi_error(self):
+        while True:
+            await asyncio.sleep(1)
+            if self.is_reading:
+                continue
+            await self.start_inventory(True, False)
+            await asyncio.sleep(0.3)
+            await self.stop_inventory(True, False)
 
     async def ensure_reading_command(self):
         while True:

@@ -63,7 +63,7 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
                     self.is_reading = True
 
                 for i in range(1, 4):
-                    await self.write_gpo({"gpo_pin": i, "state": False})
+                    asyncio.create_task(self.write_gpo({"gpo_pin": i, "state": False}))
 
                 self.is_connected = True
                 await self.get_tag_list(session)

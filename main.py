@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
 
     Este context manager lida com os processos de inicialização e encerramento:
     - Na inicialização: Cria e inicia tarefas em background
-    - No encerramento: Cancela graciosamente todas as tarefas em background
+    - No encerramento: Cancela todas as tarefas em background
 
     Args:
         app: A instância da aplicação FastAPI

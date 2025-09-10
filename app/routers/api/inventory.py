@@ -1,17 +1,17 @@
-import asyncio
 from typing import List, Union
 
 from fastapi import APIRouter, Body, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.core.path import get_prefix_from_path
-from app.schemas.api.models import EventRequest, TagRequest, validate_device
+from app.schemas.api.models import  validate_device
 from app.schemas.api.responses import device_responses, gpo_responses, state_responses
 from app.schemas.events import events
+from app.schemas.devices import devices
+from app.schemas.validators.tag import TagSchema
 
 router = APIRouter(prefix=get_prefix_from_path(__file__), tags=[get_prefix_from_path(__file__)])
 
-from app.schemas.devices import devices
 
 
 @router.post("/start/{device}")
@@ -59,13 +59,22 @@ async def stop_inventory(device: str):
 async def get_tags():
     return [tag for tag in events.tags.values()]
 
+@router.get(
+    "/get_tags_count",
+    summary="Get Current Tags Count",
+    description="Return the number of currently detected RFID tags from all connected readers",
+    response_description="{\"count\": tag_count}",
+)
+async def get_tags_count():
+    return {"count": len(events.tags)}
+
 
 @router.post(
     "/receive_tags",
     summary="Receive tags from external devices",
     description="Receives either a single tag or a list of tags",
 )
-async def receive_tags(tags: Union[TagRequest, List[TagRequest]] = Body(...)):
+async def receive_tags(tags: Union[TagSchema, List[TagSchema]] = Body(...)):
     tags = tags if isinstance(tags, list) else [tags]
     for tag in tags:
         try:
@@ -97,3 +106,15 @@ async def clear_all_tags():
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get(
+        "/any_reading",
+        summary="Check if any reader is reading",
+        description="Returns whether any reader is actively scanning for tags.",
+    )
+async def any_reading():
+    for device in devices.devices.values():
+        if device.is_reading:
+            return {"is_reading": 1}
+    return {"is_reading": 0}
+

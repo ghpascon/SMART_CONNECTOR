@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from ....events import events
+from app.schemas.events import events
 
 
 class OnEvent:

@@ -8,30 +8,25 @@
     <link rel="icon" type="image/png" href="/static/images/logo.png" />
   </head>
 
-  <body class="d-flex flex-column min-vh-100 bg-light">
+  <body data-bs-theme="dark" class="d-flex flex-column min-vh-100 bg-secondary">
     <!-- Header -->
-    <header class="bg-warning text-black py-2 mb-2">
+    <header class="bg-dark d-flex align-items-center py-2 mb-2">
       <div
-        class="container d-flex align-items-center justify-content-between position-relative"
+        class="container d-flex flex-column flex-md-row align-items-center justify-content-between"
       >
         <!-- LOGO -->
         <img
-          src="/static/images/smartx.png"
+          src="/static/images/smtx_w.png"
           alt="Logo"
           class="img-fluid"
-          style="height: 40px"
+          style="max-height: 50px; width: auto"
         />
 
         <!-- TITULO -->
-        <div
-          class="container d-flex justify-content-center align-items-center"
-          style="position: absolute"
-        >
-          <h1>{{ title }}</h1>
-        </div>
+        <h1 class="text-center flex-fill mb-2 mb-md-0">{{ title }}</h1>
 
         <!-- BOTOES -->
-        <div style="z-index: 0">
+        <div class="d-flex gap-2">
           <a href="/docs" class="btn btn-success">SWAGGER</a>
           <a href="{{ url_for('get_report') }}" class="btn btn-light"
             >Get Report</a
@@ -70,6 +65,5 @@
 
     <!-- Bootstrap JS minificado -->
     <script src="/static/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/number.js"></script>
   </body>
 </html>

@@ -57,6 +57,7 @@ class TCP(Helpers):
     async def write(self, data: str, verbose=True):
         if self.is_connected and self.writer:
             try:
+                data = data + '\n'
                 self.writer.write(data.encode())
                 await self.writer.drain()
                 if verbose:

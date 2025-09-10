@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from ....events import events
+from app.schemas.events import events
 from .helpers import ReaderHelpers
 from .on_event import OnEvent
 from .setup_reader import SetupReader
@@ -57,8 +57,9 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
                     asyncio.create_task(self.setup_reader()),
                     asyncio.create_task(self.monitor_connection()),
                     asyncio.create_task(self.get_temperature()),
-                    asyncio.create_task(self.get_gpi_state()),
                     asyncio.create_task(self.ensure_reading_command()),
+                    asyncio.create_task(self.get_gpi_state()),
+                    asyncio.create_task(self.prevent_gpi_error()),
                 ]
 
                 # Aguarde até que uma das tarefas termine (ex: desconexão)
@@ -90,18 +91,22 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
                 logging.error(f"[ERRO ENVIO] {e}")
                 self.is_connected = False
 
-    async def start_inventory(self):
+    async def start_inventory(self, test_mode=False, verbose=True):
         if self.is_reading:
             return
-        await self.send_data([0xA5, 0x5A, 0x00, 0x0A, 0x82, 0x00, 0x00, 0x00, 0x0D, 0x0A])
+        await self.send_data([0xA5, 0x5A, 0x00, 0x0A, 0x82, 0x00, 0x00, 0x00, 0x0D, 0x0A], verbose=verbose)
+        if test_mode:
+            return
         self.is_reading = True
         await events.on_start(self.device_name)
 
-    async def stop_inventory(self):
+    async def stop_inventory(self, test_mode=False, verbose=True):
         if not self.is_reading:
             return
-        await self.send_data([0xA5, 0x5A, 0x00, 0x08, 0x8C, 0x00, 0x0D, 0x0A])
-        await self.send_data([0xA5, 0x5A, 0x00, 0x09, 0x8D, 0x01, 0x00, 0x0D, 0x0A])
+        await self.send_data([0xA5, 0x5A, 0x00, 0x08, 0x8C, 0x00, 0x0D, 0x0A], verbose=verbose)
+        await self.send_data([0xA5, 0x5A, 0x00, 0x09, 0x8D, 0x01, 0x00, 0x0D, 0x0A], verbose=verbose)
+        if test_mode:
+            return      
         self.is_reading = False
         await events.on_stop(self.device_name)
 

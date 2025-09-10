@@ -46,7 +46,7 @@ class TagRequest(BaseModel):
             raise ValueError(
                 f"{info.field_name} must contain only hexadecimal characters (0-9, a-f)"
             )
-        return v
+        return v.lower()
 
     @field_validator("rssi")
     def validate_rssi(cls, v):
@@ -108,3 +108,18 @@ class SetGpoRequest(BaseModel):
     state: Optional[bool] = Field(True)
     control: Optional[str] = Field("static")
     time: Optional[int] = Field(1000)
+
+class TagListSimulator(BaseModel):
+    device: str = Field("DEVICE01")
+    start_epc: str = Field("000000000000000000000001")
+    qtd: int = 50
+
+    @field_validator("start_epc")
+    def validate_epc_length_and_hex(cls, v, info: ValidationInfo):
+        if len(v) != 24:
+            raise ValueError(f"{info.field_name} must have exactly 24 characters")
+        if not re.fullmatch(r"[0-9a-fA-F]{24}", v):
+            raise ValueError(
+                f"{info.field_name} must contain only hexadecimal characters (0-9, a-f)"
+            )
+        return v.lower()

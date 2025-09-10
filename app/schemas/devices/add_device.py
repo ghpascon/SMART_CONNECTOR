@@ -13,37 +13,37 @@ class AddDevice:
 
         ### R700
         if reader == "R700_IOT":
-            from ..readers.RFID.R700_IOT import R700_IOT
+            from .drivers.RFID.R700_IOT import R700_IOT
 
             self.devices[unique_name] = R700_IOT(data, name)
 
         ### UR4
         elif reader == "UR4":
-            from ..readers.RFID.UR4 import UR4
+            from .drivers.RFID.UR4 import UR4
 
             self.devices[unique_name] = UR4(data, name)
 
         ### X714
         elif reader == "X714":
-            from ..readers.RFID.X714 import X714
+            from .drivers.RFID.X714 import X714
 
             self.devices[unique_name] = X714(data, name)
 
         ### ICARD
         elif reader == "ICARD":
-            from ..readers.RFID.ICARD import ICARD
+            from .drivers.RFID.ICARD import ICARD
 
             self.devices[unique_name] = ICARD(data, name)
 
         ### SERIAL
         elif reader == "SERIAL":
-            from ..readers.OTHERS.SERIAL import SERIAL
+            from .drivers.OTHERS.SERIAL import SERIAL
 
             self.devices[unique_name] = SERIAL(data, name)
 
         ### TCP
         elif reader == "TCP":
-            from ..readers.OTHERS.TCP import TCP
+            from .drivers.OTHERS.TCP import TCP
 
             self.devices[unique_name] = TCP(data, name)
 

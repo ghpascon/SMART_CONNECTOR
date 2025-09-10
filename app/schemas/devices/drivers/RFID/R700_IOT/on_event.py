@@ -1,7 +1,6 @@
 import asyncio
 
-from .....core.config import settings
-from ....events import events
+from app.schemas.events import events
 
 
 class OnEvent:

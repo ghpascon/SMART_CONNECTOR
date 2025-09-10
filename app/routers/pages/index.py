@@ -5,13 +5,13 @@ from fastapi.responses import HTMLResponse
 from app.core.config import settings
 from app.core.templates import templates
 
-router = APIRouter(prefix="", tags=["Root"])
+router = APIRouter(prefix="", tags=["Pages"])
 
 
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse(
-        "root/index.html",
+        "index/main.html",
         {"request": request, "title": settings.data.get("TITLE", "SMARTX")},
     )
 

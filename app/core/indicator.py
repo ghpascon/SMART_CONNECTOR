@@ -3,33 +3,51 @@ import os
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 import pygame
-
 from .path import get_path
 
 # Initialize pygame mixer
 pygame.mixer.init()
 
-# Load beep sound if file exists
-sound_path = get_path("app/static/sounds/beep.wav")
-sound = None
 
-if os.path.exists(sound_path):
-    try:
-        sound = pygame.mixer.Sound(sound_path)
-    except Exception as e:
-        print(f"Error loading sound: {e}")
-        sound = None
-else:
-    print(f"Sound file not found: {sound_path}")
+def load_sound(filename: str):
+    """
+    Tenta carregar um arquivo de som a partir de app/static/sounds.
+    Retorna o objeto Sound se existir e for válido, caso contrário None.
+    """
+    sound_path = get_path(f"app/static/sounds/{filename}")
+    if os.path.exists(sound_path):
+        try:
+            return pygame.mixer.Sound(sound_path)
+        except Exception as e:
+            print(f"Erro carregando {filename}: {e}")
+            return None
+    else:
+        print(f"Arquivo de som não encontrado: {sound_path}")
+        return None
+
+
+# Carregar sons
+beep_sound = load_sound("beep.wav")
+error_sound = load_sound("error.mp3")
 
 
 async def beep():
     """
-    Plays a simple beep sound.
+    Executa o som de beep.
     """
-    if sound is not None:
+    if beep_sound is not None:
         try:
-            sound.play()
+            beep_sound.play()
         except Exception:
-            # Silent failure if unable to play sound
-            pass
+            pass  # Falha silenciosa
+
+
+async def error():
+    """
+    Executa o som de erro.
+    """
+    if error_sound is not None:
+        try:
+            error_sound.play()
+        except Exception:
+            pass  # Falha silenciosa
