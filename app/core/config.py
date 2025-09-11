@@ -18,7 +18,7 @@ class Settings:
         # Load main config
         if os.path.exists(self._config_path):
             try:
-                with open(self._config_path, "r") as f:
+                with open(self._config_path, "r", encoding="utf8") as f:
                     self.data = json.load(f)
             except Exception as e:
                 print(f"Error loading {self._config_path}: {e}")

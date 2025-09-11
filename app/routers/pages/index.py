@@ -13,6 +13,7 @@ async def index(request: Request):
     return templates.TemplateResponse(
         "index/main.html",
         {"request": request, "title": settings.data.get("TITLE", "SMARTX")},
+        media_type="text/html; charset=utf-8"
     )
 
 
