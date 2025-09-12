@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-import aiohttp
+import httpx  
 
 from app.schemas.validators.tag import WriteTagValidator
 
@@ -25,7 +25,7 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
         self.endpoint_write = f"{self.urlBase}/profiles/inventory/tag-access"
 
         self.interface_config = {"rfidInterface": "rest"}
-        self.auth = aiohttp.BasicAuth("root", "impinj")
+        self.auth = httpx.BasicAuth("root", "impinj")  
 
         self.tags_to_write = {}
 
@@ -34,9 +34,7 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
 
     async def connect(self):
         while True:
-            async with aiohttp.ClientSession(
-                auth=self.auth, connector=aiohttp.TCPConnector(ssl=False)
-            ) as session:
+            async with httpx.AsyncClient(auth=self.auth, verify=False, timeout=10.0) as session:
                 self.is_connected = False
                 self.is_reading = False
                 success = await self.configure_interface(session)
@@ -63,7 +61,7 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
                     self.is_reading = True
 
                 for i in range(1, 4):
-                    asyncio.create_task(self.write_gpo({"gpo_pin": i, "state": False}))
+                    asyncio.create_task(self.write_gpo(pin=i, state=False))
 
                 self.is_connected = True
                 await self.get_tag_list(session)
@@ -71,12 +69,17 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
     async def clear_tags(self):
         self.tags = {}
 
-    async def write_gpo(self, gpo_data: dict):
-        gpo_command = await self.get_gpo_command(gpo_data)
+    async def write_gpo(
+            self,
+            pin: int = 1,
+            state: bool | str = True,
+            control: str = "static",
+            time: int = 1000, 
+            *args, **kwargs
+        ):
+        gpo_command = await self.get_gpo_command(pin=pin, state=state, control=control, time=time)
         try:
-            async with aiohttp.ClientSession(
-                auth=self.auth, connector=aiohttp.TCPConnector(ssl=False)
-            ) as session:
+            async with httpx.AsyncClient(auth=self.auth, verify=False, timeout=10.0) as session:
                 await self.post_to_reader(
                     session, self.endpoint_gpo, payload=gpo_command, method="put"
                 )
@@ -86,27 +89,6 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
     async def write_epc(self, tag_commands):
         """
         Writes a new EPC (Electronic Product Code) to RFID tags.
-
-        Args:
-            tag_commands (list[dict] | dict): A dictionary or a list of dictionaries containing tag information.
-                Each dictionary must have the following keys:
-                    - target_identifier (str): The identifier type used to locate the tag ("EPC", "TID", None).
-                    - target_value (str): The current value of the target identifier to find the tag.
-                    - new_epc (str): The new EPC value to be written to the tag.
-                    - password (str): The password to access the tag.
-
-        Example:
-            tag_commands = [
-                {
-                    "target_identifier": "EPC",
-                    "target_value": "300833B2DDD9014000000001",
-                    "new_epc": "300833B2DDD9014000000002",
-                    "password": "00000000"
-                }
-            ]
-
-        Notes:
-            If a single dictionary is provided, it will be automatically converted into a list.
         """
         if isinstance(tag_commands, dict):
             tag_commands = [tag_commands]

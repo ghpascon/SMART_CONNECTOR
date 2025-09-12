@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 
-import aiohttp
+import httpx
 
 
 class ReaderHelpers:
@@ -26,42 +26,36 @@ class ReaderHelpers:
 
     async def post_to_reader(self, session, endpoint, payload=None, method="post", timeout=3):
         try:
-            client_timeout = aiohttp.ClientTimeout(total=timeout)
-
             if session is None:
-                async with aiohttp.ClientSession(
-                    auth=self.auth,
-                    connector=aiohttp.TCPConnector(ssl=False)
-                ) as session:
-                    return await self.post_to_reader(session, endpoint, payload, method, timeout)
+                async with httpx.AsyncClient(auth=self.auth, verify=False, timeout=timeout) as client:
+                    return await self.post_to_reader(client, endpoint, payload, method, timeout)
 
             if method == "post":
-                async with session.post(endpoint, json=payload, timeout=client_timeout) as response:
-                    print(f"{endpoint} -> {response.status}")
-                    return response.status == 204
+                response = await session.post(endpoint, json=payload, timeout=timeout)
+                print(f"{endpoint} -> {response.status_code}")
+                return response.status_code == 204
 
             elif method == "put":
-                async with session.put(endpoint, json=payload, timeout=client_timeout) as response:
-                    print(f"{endpoint} -> {response.status}")
-                    return response.status == 204
+                response = await session.put(endpoint, json=payload, timeout=timeout)
+                print(f"{endpoint} -> {response.status_code}")
+                return response.status_code == 204
 
         except Exception as e:
             logging.error(f"Error posting to {endpoint}: {e}")
             return False
-        
 
     async def get_tag_list(self, session):
         try:
-            async with session.get(self.endpointDataStream, timeout=None) as response:
-                if response.status != 200:
-                    print(f"Failed to connect to data stream: {response.status}")
+            async with session.stream("GET", self.endpointDataStream, timeout=None) as response:
+                if response.status_code != 200:
+                    print(f"Failed to connect to data stream: {response.status_code}")
                     return
                 print("Searching for tags...")
                 print("EPCs of tags detected in field of view:")
 
-                async for line in response.content:
+                async for line in response.aiter_lines():
                     try:
-                        string = line.decode("utf-8").strip()
+                        string = line.strip()
                         if not string:
                             continue
                         jsonEvent = json.loads(string)
@@ -81,7 +75,7 @@ class ReaderHelpers:
                     except Exception as e:
                         logging.error(f"Unexpected error: {e}")
 
-        except aiohttp.ClientError as e:
+        except httpx.RequestError as e:
             logging.error(f"Connection error: {e}")
 
     async def get_tid_from_epc(self, epc):
@@ -91,27 +85,48 @@ class ReaderHelpers:
                 return self.tags.get(tag).get("tid")
         return None
 
-    async def get_gpo_command(self, gpo_data: dict):
-        gpo_pin = gpo_data.get("gpo_pin", 1)
-        state = "high" if gpo_data.get("state", True) else "low"
-        control = gpo_data.get("control", "static")
-        time = gpo_data.get("time", 1000)
+    async def get_gpo_command(
+        self,
+        pin: int = 1,
+        state: bool | str = True,
+        control: str = "static",
+        time: int = 1000
+    ) -> dict:
+        """
+        Gera o payload de configuração de GPO para o leitor RFID.
+
+        Args:
+            pin (int): Número do pino GPO a ser configurado. Default é 1.
+            state (bool | str): Estado do pino. Pode ser:
+                - True ou "high" → alto
+                - False ou "low" → baixo
+            control ("static" | "pulsed"): Tipo de controle do pino.
+                - "static": mantém o estado
+                - "pulsed": envia pulso por tempo definido
+            time (int): Duração do pulso em milissegundos. Apenas usado se control="pulsed". Default 1000ms.
+
+        Returns:
+            dict: Payload compatível com a API do leitor RFID para configurar GPO.
+
+        Example:
+            gpo_cmd = await self.get_gpo_command(pin=2, state=True, control="pulsed", time=500)
+        """
+        # Normaliza o estado
+        state = "high" if state is True else "low" if state is False else str(state)
 
         if control == "static":
             gpo_command = {
-                "gpoConfigurations": [{"gpo": gpo_pin, "state": state, "control": control}]
+                "gpoConfigurations": [{"gpo": pin, "state": state, "control": control}]
             }
-
         elif control == "pulsed":
             gpo_command = {
                 "gpoConfigurations": [
                     {
-                        "gpo": gpo_pin,
+                        "gpo": pin,
                         "state": state,
                         "pulseDurationMilliseconds": time,
                         "control": control,
                     }
                 ]
             }
-
         return gpo_command

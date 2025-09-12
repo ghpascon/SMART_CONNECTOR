@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-import aiohttp
+import httpx
 
 
 class WriteCommands:
@@ -63,9 +63,7 @@ class WriteCommands:
             all_commands = [all_commands]
         payload = {"accessConfigurations": all_commands}
         try:
-            async with aiohttp.ClientSession(
-                auth=self.auth, connector=aiohttp.TCPConnector(ssl=False)
-            ) as session:
+            async with httpx.AsyncClient(auth=self.auth, verify=False, timeout=10.0) as session:
                 await self.post_to_reader(session, self.endpoint_write, payload=payload)
         except Exception as e:
             logging.error(f"Failed to Write: {e}")

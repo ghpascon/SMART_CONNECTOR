@@ -3,7 +3,7 @@ import json
 import logging
 import os
 
-import aiohttp
+import httpx  
 
 from app.core.config import settings
 from app.core.indicator import beep
@@ -23,7 +23,7 @@ class Actions:
     async def set_actions(self, data=None, action_path="config/actions.json"):
         if data is not None:
             self.actions = data
-            os.makedirs(os.path.dirname(action_path), exist_ok=True)  # Garante que a pasta exista
+            os.makedirs(os.path.dirname(action_path), exist_ok=True)
             with open(action_path, "w") as f:
                 json.dump(self.actions, f, indent=4)
 
@@ -38,21 +38,17 @@ class Actions:
 
     ### TAG
     async def on_tag_events(self, tag):
-        # DATABASE TAG
         if self.actions.get("DATABASE_URL") is not None:
             asyncio.create_task(self.tag_db(tag))
 
-        # POST TAG
         http_post = self.actions.get("HTTP_POST")
         if http_post:
             asyncio.create_task(self.post_tag(tag, http_post))
 
-        # XTRACK TAG
         xtrack_post = self.actions.get("XTRACK_URL")
         if xtrack_post:
             asyncio.create_task(self.post_tag_xtrack(tag, xtrack_post))
 
-        # BEEP
         if settings.data.get("BEEP", False):
             asyncio.create_task(beep())
 
@@ -60,11 +56,9 @@ class Actions:
         try:
             async with database_engine.get_db() as db:
                 current_tag = DbTag(**tag)
-
                 if current_tag.epc is None:
                     return
                 db.add(current_tag)
-
                 await db.commit()
         except Exception as e:
             logging.error(f"Erro ao salvar tag: {e}")
@@ -77,9 +71,8 @@ class Actions:
                 "event_data": tag,
                 "timestamp": tag.get("timestamp"),
             }
-            async with aiohttp.ClientSession() as session:
-                async with session.post(endpoint, json=payload) as response:
-                    pass
+            async with httpx.AsyncClient() as client:
+                await client.post(endpoint, json=payload, timeout=10.0)
         except Exception as e:
             logging.info(f"Erro ao enviar tag: {e}")
 
@@ -90,17 +83,18 @@ class Actions:
                         <data>EVENT=|DEVICENAME={tag.get("device", "")}|ANTENNANAME={tag.get("ant", "")}|TAGID={tag.get("epc", "")}|</data>
                         <cmpl>STATE=|DATA1=|DATA2=|DATA3=|DATA4=|DATA5=|</cmpl>
                         </msg>"""
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    endpoint, data=payload, headers={"Content-Type": "application/xml"}
-                ) as response:
-                    pass
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    endpoint,
+                    content=payload,
+                    headers={"Content-Type": "application/xml"},
+                    timeout=10.0,
+                )
         except Exception as e:
             logging.info(f"Erro ao enviar tag: {e}")
 
     ### EVENTS
     async def on_events(self, device, event_type, event_data, timestamp):
-        # SAVE IN MEMORY
         self.events.appendleft(
             {
                 "timestamp": timestamp,
@@ -110,11 +104,9 @@ class Actions:
             }
         )
 
-        # DATABASE EVENT
         if self.actions.get("DATABASE_URL") is not None:
             asyncio.create_task(self.event_db(device, event_type, event_data, timestamp))
 
-        # POST EVENT
         http_post = self.actions.get("HTTP_POST")
         if http_post:
             asyncio.create_task(
@@ -130,9 +122,7 @@ class Actions:
                     event_type=event_type,
                     event_data=str(event_data),
                 )
-
                 db.add(current_event)
-
                 await db.commit()
         except Exception as e:
             logging.error(f"Erro ao salvar evento: {e}")
@@ -145,8 +135,7 @@ class Actions:
                 "event_type": event_type,
                 "event_data": event_data,
             }
-            async with aiohttp.ClientSession() as session:
-                async with session.post(endpoint, json=payload) as response:
-                    pass
+            async with httpx.AsyncClient() as client:
+                await client.post(endpoint, json=payload, timeout=10.0)
         except Exception as e:
             logging.info(f"Erro ao enviar inventory: {e}")

@@ -104,7 +104,7 @@ class EventRequest(BaseModel):
 
 class SetGpoRequest(BaseModel):
     device: str = Field("DEVICE01")
-    gpo_pin: Optional[int] = Field(1)
+    pin: Optional[int] = Field(1)
     state: Optional[bool] = Field(True)
     control: Optional[str] = Field("static")
     time: Optional[int] = Field(1000)

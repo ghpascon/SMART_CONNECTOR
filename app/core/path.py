@@ -1,10 +1,9 @@
 import importlib
 import logging
-import os
 import sys
 from pathlib import Path
-
-
+import subprocess
+import winreg
 def get_path(relative_path: str) -> Path:
     """
     Retorna o caminho absoluto do arquivo ou diretório, levando em consideração se o
@@ -96,3 +95,4 @@ def load_swagger_description(swagger_file_path: str) -> str:
     except Exception as e:
         logging.error(f"Error loading Swagger documentation: {e}", exc_info=True)
         return "Error loading API documentation."
+

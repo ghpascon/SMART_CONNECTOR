@@ -133,13 +133,13 @@ async def write_gpo(data: SetGpoRequest):
         # 2. Monta os dados a partir do JSON e executa o comando
         try:
             gpo_data = {
-                "gpo_pin": payload.get("gpo_pin", 1),
+                "pin": payload.get("gpo_pin", 1),
                 "state": payload.get("state", True),
                 "control": payload.get("control", "static"),
                 "time": payload.get("time", 1000),
             }
 
-            result = await devices.write_gpo(device, gpo_data)
+            result = await devices.write_gpo(device, **gpo_data)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"{str(e)}")
 

@@ -110,8 +110,15 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
         self.is_reading = False
         await events.on_stop(self.device_name)
 
-    async def write_gpo(self, gpo_data: dict):
-        state = gpo_data.get("state", True)
+    async def write_gpo(
+        self,
+        state: bool | str = True,
+        *args,
+        **kwargs
+    ):
+        # Normaliza o estado para 0/1
+        state_value = 0x01 if state else 0x00
+
         await self.send_data(
             [
                 0xA5,
@@ -122,7 +129,7 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
                 0x09,
                 0x00,
                 0x00,
-                0x00 if not state else 0x01,
+                state_value,
                 0x00,
                 0x0D,
                 0x0A,

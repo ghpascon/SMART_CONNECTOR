@@ -36,7 +36,6 @@ SMARTX RFID Middleware é uma solução desenvolvida para gestão de leitores RF
 - SQLAlchemy (2.0.29)
 - Jinja2 (3.1.3)
 - PySerial/PySerial-AsyncIO (3.5/0.6)
-- AIOHTTP (3.11.18)
 - PyEPC (0.5.0)
 - Database drivers (PyMySQL, AIOMySQL, AIOSQLite, AsyncPG)
 
