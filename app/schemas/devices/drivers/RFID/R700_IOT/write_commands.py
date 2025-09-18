@@ -12,11 +12,11 @@ class WriteCommands:
         password = tag.password
 
         if identifier == "epc":
-            print(f"Get tid from -> {target}")
+            logging.info(f"Get tid from -> {target}")
             tid_from_epc = await self.get_tid_from_epc(target)
             if tid_from_epc is not None:
                 target = tid_from_epc
-                print(f"Using tid -> {target}")
+                logging.info(f"Using tid -> {target}")
                 identifier = "tid"
 
         return {

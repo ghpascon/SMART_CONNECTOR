@@ -2,12 +2,12 @@ import asyncio
 from typing import List, Union
 
 from fastapi import APIRouter, Body, Request
-from fastapi.responses import RedirectResponse
 
 from app.core.path import get_prefix_from_path
 from app.db.database import database_engine
-from app.schemas.api.models import EventRequest, TagRequest
+from app.schemas.api.models import EventRequest
 from app.schemas.events import events
+import logging
 
 router = APIRouter(prefix=get_prefix_from_path(__file__), tags=[get_prefix_from_path(__file__)])
 
@@ -31,7 +31,7 @@ async def receive_events(
     events_received: Union[EventRequest, List[EventRequest]] = Body(...),
 ):
     events_received = events_received if isinstance(events_received, list) else [events_received]
-    print(events_received)
+    logging.info(events_received)
     for event in events_received:
         event = event.model_dump()
         asyncio.create_task(events.on_event(**event))

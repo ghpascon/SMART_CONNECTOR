@@ -41,7 +41,7 @@ async def daily_clear_db():
     while True:
         try:
             await logger_manager.clear_old_logs()
-            await database_engine.clear_db(settings.data.get("STORAGE_DAYS"))
+            await database_engine.clear_db(settings.actions_data.get("STORAGE_DAYS"))
 
             # Calculate the next midnight in Brasília time (UTC-3)
             now = datetime.now(timezone(timedelta(hours=-3)))

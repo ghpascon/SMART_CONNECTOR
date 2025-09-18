@@ -15,7 +15,7 @@ class OnEvent:
 
     async def on_success_cmd(self):
         if not self.setup and self.wait_answer:
-            print("SUCCESS", self.setup_step)
+            logging.info("SUCCESS", self.setup_step)
             self.setup_step += 1
             self.wait_answer = False
 
@@ -67,10 +67,10 @@ class OnEvent:
             return
         elif not gpi1 == self.gpi["1"]:
             self.gpi["1"] = gpi1
-            print(f"GPI1 -> {gpi1}")
+            logging.info(f"GPI1 -> {gpi1}")
         elif not gpi2 == self.gpi["2"]:
             self.gpi["2"] = gpi2
-            print(f"GPI2 -> {gpi2}")
+            logging.info(f"GPI2 -> {gpi2}")
 
         if self.gpi_config is not None and self.gpi_config.get("active"):
             start = self.gpi_config.get("start")

@@ -5,6 +5,7 @@ from typing import Any, Optional, Tuple
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from ..devices import devices
+import logging
 
 
 def validate_device(device: str, need_connected: bool = True) -> Tuple[bool, str | dict]:
@@ -25,7 +26,7 @@ def load_example_from_json(path: str) -> dict:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"Erro ao carregar JSON de exemplo: {e}")
+        logging.info(f"Erro ao carregar JSON de exemplo: {e}")
         return {}
 
 

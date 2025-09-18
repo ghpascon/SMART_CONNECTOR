@@ -1,3 +1,4 @@
+import logging
 class AddDevice:
     def __init__(self):
         self.devices = {}
@@ -8,8 +9,8 @@ class AddDevice:
         # Ensure unique device name
         unique_name = self._generate_unique_name(name)
 
-        print(f"🔍 Adding device: {unique_name}")
-        print(f"📡 Reader type: {reader}")
+        logging.info(f"🔍 Adding device: {unique_name}")
+        logging.info(f"📡 Reader type: {reader}")
 
         ### R700
         if reader == "R700_IOT":
@@ -49,10 +50,10 @@ class AddDevice:
 
         ###
         else:
-            print(f"⚠️ Unknown reader type '{reader}'. Device '{unique_name}' was not added.")
+            logging.warning(f"⚠️ Unknown reader type '{reader}'. Device '{unique_name}' was not added.")
             return  # Exit early if device is invalid
 
-        print(f"✅ Device '{unique_name}' added successfully.")
+        logging.info(f"✅ Device '{unique_name}' added successfully.")
 
     def get_device_list(self):
         return list(self.devices.keys())

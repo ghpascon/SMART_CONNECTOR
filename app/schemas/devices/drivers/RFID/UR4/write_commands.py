@@ -33,11 +33,11 @@ class WriteCommands:
 
             # TID FROM EPC
             if validated.target_identifier == "epc":
-                print(f"Get tid from -> {validated.target_value}")
+                logging.info(f"Get tid from -> {validated.target_value}")
                 tid_from_epc = await self.get_tid_from_epc(validated.target_value)
                 if tid_from_epc is not None:
                     validated.target_value = tid_from_epc
-                    print(f"Using tid -> {validated.target_value}")
+                    logging.info(f"Using tid -> {validated.target_value}")
                     validated.target_identifier = "tid"
 
             # SAVE TAG TO WRITE
@@ -53,7 +53,7 @@ class WriteCommands:
                     "retry": self.config.get("WRITE_RETRY_COUNT"),
                     "tag_cmd": tag_cmd,
                 }
-                print("Tag To Write -> ", self.tags_to_write[validated.target_value])
+                logging.info("Tag To Write -> ", self.tags_to_write[validated.target_value])
 
             # STOP READING BEFORE WRITE
             if self.is_reading:

@@ -1,6 +1,11 @@
 import os
-
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pygame.pkgdata")
+
+import logging
+
 
 import pygame
 from .path import get_path
@@ -19,10 +24,10 @@ def load_sound(filename: str):
         try:
             return pygame.mixer.Sound(sound_path)
         except Exception as e:
-            print(f"Erro carregando {filename}: {e}")
+            logging.error(f"Erro carregando {filename}: {e}")
             return None
     else:
-        print(f"Arquivo de som não encontrado: {sound_path}")
+        logging.error(f"Arquivo de som não encontrado: {sound_path}")
         return None
 
 

@@ -10,6 +10,7 @@ from app.core.indicator import beep
 from app.db.database import database_engine
 from app.models.rfid import DbEvent, DbTag
 
+from datetime import datetime
 
 class Actions:
     async def get_actions_example(self, path="config/examples/actions.json"):
@@ -65,11 +66,16 @@ class Actions:
 
     async def post_tag(self, tag, endpoint):
         try:
+            ts = tag.get("timestamp")
+            if isinstance(ts, datetime):
+                ts = ts.isoformat()  
+                tag["timestamp"] = ts
+
             payload = {
                 "device": tag.get("device"),
                 "event_type": "tag",
                 "event_data": tag,
-                "timestamp": tag.get("timestamp"),
+                "timestamp": ts,
             }
             async with httpx.AsyncClient() as client:
                 await client.post(endpoint, json=payload, timeout=10.0)
@@ -129,6 +135,9 @@ class Actions:
 
     async def post_event(self, device, event_type, event_data, timestamp, endpoint):
         try:
+            if isinstance(timestamp, datetime):
+                timestamp = timestamp.isoformat()
+
             payload = {
                 "timestamp": timestamp,
                 "device": device,

@@ -9,6 +9,7 @@ from app.schemas.api.responses import device_responses, gpo_responses, state_res
 from app.schemas.events import events
 from app.schemas.devices import devices
 from app.schemas.validators.tag import TagSchema
+import logging
 
 router = APIRouter(prefix=get_prefix_from_path(__file__), tags=[get_prefix_from_path(__file__)])
 
@@ -19,10 +20,10 @@ async def start_inventory(device: str):
     try:
         status, msg = validate_device(device=device)
         if not status:
-            print("[ START ]", msg)
+            logging.error("[ START ]", msg)
             raise HTTPException(status_code=422, detail=msg)
 
-        print(f"START -> {device}")
+        logging.info(f"START -> {device}")
         await devices.start_inventory(device)
         return {"msg": msg}
 
@@ -37,10 +38,10 @@ async def stop_inventory(device: str):
     try:
         status, msg = validate_device(device=device)
         if not status:
-            print("[ STOP ]", msg)
+            logging.error("[ STOP ]", msg)
             raise HTTPException(status_code=422, detail=msg)
 
-        print(f"STOP -> {device}")
+        logging.info(f"STOP -> {device}")
         await devices.stop_inventory(device)
         return {"msg": msg}
 
@@ -87,7 +88,7 @@ async def receive_tags(tags: Union[TagSchema, List[TagSchema]] = Body(...)):
 
 @router.post("/clear/{device}")
 async def clear_tags(device: str):
-    print(f"CLEAR -> {device}")
+    logging.info(f"CLEAR -> {device}")
     await devices.clear_tags(device)
     return {"msg": f"{device} clear tags"}
 

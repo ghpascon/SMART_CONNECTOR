@@ -1,7 +1,7 @@
 {
   "SECRET_KEY": "smtx",
   "TITLE": "SMARTX RFID",
-  "OPEN_BROWSER": true,
+  "OPEN_BROWSER": false,
   "BEEP": false,
   "CLEAR_OLD_TAGS_INTERVAL": null
 }

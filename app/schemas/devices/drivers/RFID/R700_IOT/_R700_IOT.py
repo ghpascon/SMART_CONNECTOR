@@ -8,7 +8,7 @@ from app.schemas.validators.tag import WriteTagValidator
 from .on_event import OnEvent
 from .reader_helpers import ReaderHelpers
 from .write_commands import WriteCommands
-
+from app.schemas.events import events
 
 class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
     def __init__(self, config, name):
@@ -35,17 +35,20 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
     async def connect(self):
         while True:
             async with httpx.AsyncClient(auth=self.auth, verify=False, timeout=10.0) as session:
+                if self.is_connected:
+                    asyncio.create_task(events.on_disconnect(self.name))
+
                 self.is_connected = False
                 self.is_reading = False
                 success = await self.configure_interface(session)
                 if not success:
-                    print("Failed to configure interface")
+                    logging.error("Failed to configure interface")
                     await asyncio.sleep(1)
                     continue
 
                 success = await self.stop_inventory(session)
                 if not success:
-                    print("Failed to stop profiles")
+                    logging.error("Failed to stop profiles")
                     await asyncio.sleep(1)
                     continue
 
@@ -54,7 +57,7 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
                 ):
                     success = await self.start_inventory(session)
                     if not success:
-                        print("Failed to start inventory")
+                        logging.error("Failed to start inventory")
                         await asyncio.sleep(1)
                         continue
                 if self.config.get("START_READING"):
@@ -64,6 +67,7 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
                     asyncio.create_task(self.write_gpo(pin=i, state=False))
 
                 self.is_connected = True
+                asyncio.create_task(events.on_connect(self.name))
                 await self.get_tag_list(session)
 
     async def clear_tags(self):

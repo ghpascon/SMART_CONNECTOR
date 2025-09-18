@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from .helpers import Helpers
-
+from app.schemas.events import events
 
 class TCP(Helpers):
     def __init__(self, config, name):
@@ -23,11 +23,12 @@ class TCP(Helpers):
     async def connect(self):
         while True:
             try:
-                print(f"Connecting: {self.device_name} - {self.ip}:{self.port}")
+                logging.info(f"Connecting: {self.device_name} - {self.ip}:{self.port}")
                 self.reader, self.writer = await asyncio.wait_for(
                     asyncio.open_connection(self.ip, self.port), timeout=3
                 )
                 self.is_connected = True
+                asyncio.create_task(events.on_connect(self.name))
                 logging.info(f"✅ [CONNECTED] {self.device_name} - {self.ip}:{self.port}")
 
                 # Start the receive and monitor tasks
@@ -44,10 +45,12 @@ class TCP(Helpers):
                     task.cancel()
 
                 self.is_connected = False
+                asyncio.create_task(events.on_disconnect(self.name))
                 logging.info(f"🔌 [DISCONNECTED] {self.device_name} - Attempting reconnection...")
 
             except Exception as e:
                 self.is_connected = False
+                asyncio.create_task(events.on_disconnect(self.name))
                 logging.error(
                     f"❌ [CONNECTION ERROR] {self.device_name}: {e} - Retrying in 3 seconds..."
                 )
@@ -65,3 +68,4 @@ class TCP(Helpers):
             except Exception as e:
                 logging.error(f"[SEND ERROR] {e}")
                 self.is_connected = False
+                asyncio.create_task(events.on_disconnect(self.name))

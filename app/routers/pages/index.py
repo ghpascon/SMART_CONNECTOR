@@ -18,7 +18,7 @@ async def index(request: Request):
 
 
 @router.get("/docs", include_in_schema=False)
-async def custom_swagger_ui_html():
+async def docs():
     return get_swagger_ui_html(
         openapi_url="/openapi.json",
         title=settings.data.get("TITLE", "SMARTX") + " - Docs",
@@ -26,3 +26,4 @@ async def custom_swagger_ui_html():
         swagger_css_url="/static/docs/swagger-ui.css",
         swagger_favicon_url="/static/images/logo.png",
     )
+

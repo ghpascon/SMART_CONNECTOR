@@ -5,7 +5,7 @@ import time
 import serial.tools.list_ports
 import serial_asyncio
 
-from app.core.config import settings
+from app.schemas.events import events
 
 from .on_receive import OnReceive
 from .rfid import RfidCommands
@@ -83,6 +83,7 @@ class ICARD(asyncio.Protocol, OnReceive, RfidCommands):
         logging.error("⚠️ Serial connection lost.")
         self.transport = None
         self.is_connected = False
+        asyncio.create_task(events.on_disconnect(self.name))
         self.is_reading = False
         self.step = 0
 
@@ -120,32 +121,32 @@ class ICARD(asyncio.Protocol, OnReceive, RfidCommands):
 
             # If AUTO mode, try to detect port by VID/PID
             if self.is_auto:
-                print("🔍 Auto-detecting port by VID=0001 and PID=0001...")
+                logging.info("🔍 Auto-detecting port")
                 ports = serial.tools.list_ports.comports()
                 found_port = None
                 for p in ports:
                     # p.vid and p.pid are integers (e.g. 0x0001 == 1 decimal)
                     if p.vid == self.vid and p.pid == self.pid:
                         found_port = p.device
-                        print(f"✅ Detected port: {found_port}")
+                        logging.info(f"✅ Detected port: {found_port}")
                         break
 
                 if found_port is None:
-                    print(f"⚠️ No port with VID={self.vid} and PID={self.pid} found.")
-                    print("⏳ Retrying in 3 seconds...")
+                    logging.warning(f"⚠️ No port with VID={self.vid} and PID={self.pid} found.")
+                    logging.info("⏳ Retrying in 3 seconds...")
                     await asyncio.sleep(3)
                     continue  # try to detect again in next loop
                 else:
                     self.port = found_port
 
             try:
-                print(f"🔌 Trying to connect to {self.port} at {self.baudrate} bps...")
+                logging.info(f"🔌 Trying to connect to {self.port} at {self.baudrate} bps...")
                 await serial_asyncio.create_serial_connection(
                     loop, lambda: self, self.port, baudrate=self.baudrate
                 )
                 logging.info("🟢 Successfully connected.")
                 await self.on_con_lost.wait()
-                print("🔄 Connection lost. Attempting to reconnect...")
+                logging.info("🔄 Connection lost. Attempting to reconnect...")
             except Exception as e:
                 logging.error(f"❌ Connection error: {e}")
 
@@ -153,7 +154,7 @@ class ICARD(asyncio.Protocol, OnReceive, RfidCommands):
             if self.is_auto:
                 self.port = "AUTO"
 
-            print("⏳ Waiting 3 seconds before retrying...")
+            logging.info("⏳ Waiting 3 seconds before retrying...")
             await asyncio.sleep(3)
 
     def crc16(self, data: bytes, poly=0x8408):

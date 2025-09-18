@@ -5,6 +5,7 @@ from app.core.path import get_prefix_from_path
 from app.schemas.api.models import SetGpoRequest, validate_device
 from app.schemas.api.responses import config_responses, device_list_responses, gpo_responses
 from app.schemas.devices import devices
+import logging
 
 router_prefix = get_prefix_from_path(__file__)
 router = APIRouter(prefix=router_prefix, tags=[router_prefix])
@@ -145,10 +146,10 @@ async def write_gpo(data: SetGpoRequest):
 
         # 3. Resposta final
         if result:
-            print(f"write_gpo -> {device} - {gpo_data['state']}")
+            logging.info(f"write_gpo -> {device} - {gpo_data['state']}")
             return {"msg": f"GPO {device}, {gpo_data['state']}"}
         else:
-            print(f"{device} não possui GPO configurado")
+            logging.warning(f"{device} não possui GPO configurado")
             return JSONResponse(
                 status_code=404, content={"msg": f"Dispositivo {device} não possui GPO"}
             )

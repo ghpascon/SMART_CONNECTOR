@@ -6,7 +6,7 @@ import time
 class SetupReader:
     async def setup_reader(self):
         await asyncio.sleep(0.5)
-        print(f"[SETUP] Iniciando setup")
+        logging.info(f"[SETUP] Iniciando setup")
         self.setup_step = 0
         self.setup = False
         self.wait_answer = False
@@ -20,105 +20,105 @@ class SetupReader:
 
             # REGIAO
             if self.setup_step == 0 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_region()
                 self.wait_answer = True
 
             # INVENTORY MODE
             elif self.setup_step == 1 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_inventory_mode()
                 self.wait_answer = True
 
             # SESSION + TARGET
             elif self.setup_step == 2 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_session_target()
                 self.wait_answer = True
 
             # ANTENAS
             elif self.setup_step == 3 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_antennas()
                 self.wait_answer = True
 
             # COMMAND MODE
             elif self.setup_step == 4 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_command_mode()
                 self.wait_answer = True
 
             # TAG FOCUS
             elif self.setup_step == 5 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_tag_focus()
                 self.wait_answer = True
 
             # FASTID
             elif self.setup_step == 6 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_fastid_1()
                 self.wait_answer = True
             elif self.setup_step == 7 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_fastid_2()
                 self.wait_answer = True
             elif self.setup_step == 8 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_fastid_3()
                 self.wait_answer = True
 
             # FAST INVENTORY
             elif self.setup_step == 9 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_fast_inventory()
                 self.wait_answer = True
 
             # BUZZER
             elif self.setup_step == 10 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_buzzer()
                 self.wait_answer = True
 
             # RF-LINK
             elif self.setup_step == 11 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_rf_link()
                 self.wait_answer = True
 
             # CW
             elif self.setup_step == 12 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.setup_cw()
                 self.wait_answer = True
 
             # SET GPO
             elif self.setup_step == 13 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 await self.write_gpo({"state": False})
                 self.wait_answer = True
 
             # POWER 1
             elif self.setup_step == 14 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 self.wait_answer = True
                 await self.setup_power_ant(1)
 
             # POWER 2
             elif self.setup_step == 15 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 self.wait_answer = True
                 await self.setup_power_ant(2)
 
             # POWER 3
             elif self.setup_step == 16 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 self.wait_answer = True
                 await self.setup_power_ant(3)
 
             # POWER 4
             elif self.setup_step == 17 and not self.wait_answer:
-                print(f"[SETUP] Step -> {self.setup_step}")
+                logging.info(f"[SETUP] Step -> {self.setup_step}")
                 self.wait_answer = True
                 await self.setup_power_ant(4)
 
@@ -238,7 +238,7 @@ class SetupReader:
             value = power * 100
             high = (value >> 8) & 0xFF
             low = value & 0xFF
-            print("send")
+            logging.info("send")
             await self.send_data(
                 [
                     0xA5,
@@ -259,6 +259,6 @@ class SetupReader:
             )
 
         except Exception as e:
-            print(e)
+            logging.info(e)
             self.setup_step += 1
             self.wait_answer = False

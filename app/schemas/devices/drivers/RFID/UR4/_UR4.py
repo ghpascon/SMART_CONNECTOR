@@ -6,7 +6,7 @@ from .helpers import ReaderHelpers
 from .on_event import OnEvent
 from .setup_reader import SetupReader
 from .write_commands import WriteCommands
-
+from app.schemas.events import events
 
 class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
     def __init__(self, config, name):
@@ -44,11 +44,12 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
     async def connect(self):
         while True:
             try:
-                print(f"Tentando conectar ao leitor em {self.ip}:{self.port}")
+                logging.info(f"Tentando conectar ao leitor em {self.ip}:{self.port}")
                 self.reader, self.writer = await asyncio.wait_for(
                     asyncio.open_connection(self.ip, self.port), timeout=3
                 )
                 self.is_connected = True
+                asyncio.create_task(events.on_connect(self.name))
                 logging.info(f"✅ [CONECTADO] Conectado a {self.ip}:{self.port}")
 
                 # Rode as tarefas de forma independente para monitorar desconexão
@@ -70,10 +71,12 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
                     task.cancel()
 
                 self.is_connected = False
+                asyncio.create_task(events.on_disconnect(self.name))
                 logging.info("Conexão perdida, tentando reconectar...")
 
             except Exception as e:
                 self.is_connected = False
+                asyncio.create_task(events.on_disconnect(self.name))
                 logging.error(f"❌ Erro: {e}. Tentando reconectar em 3 segundos...")
 
             await asyncio.sleep(3)
@@ -90,6 +93,7 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
             except Exception as e:
                 logging.error(f"[ERRO ENVIO] {e}")
                 self.is_connected = False
+                asyncio.create_task(events.on_disconnect(self.name))
 
     async def start_inventory(self, test_mode=False, verbose=True):
         if self.is_reading:

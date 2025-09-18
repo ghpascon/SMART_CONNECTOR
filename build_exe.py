@@ -72,7 +72,7 @@ extra_data = [f"{folder}{os.sep};{folder}" for folder in EXTRA_FOLDERS if os.pat
 
 # === Executa o PyInstaller ===
 PyInstaller.__main__.run(
-    [ENTRY_SCRIPT, f"--name={APP_NAME}", "--onefile", "--console"]
+    [ENTRY_SCRIPT, f"--name={APP_NAME}", "--onefile", "--noconsole"]
     + [f"--hidden-import={h}" for h in hiddenimports + all_manual_hidden]
     + [f"--add-data={d}" for d in extra_data]
 )

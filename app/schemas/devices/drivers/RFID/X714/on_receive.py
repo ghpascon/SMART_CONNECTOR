@@ -9,7 +9,7 @@ class OnReceive:
         data = data.decode(errors="ignore")
         data = data.replace("\r", "").replace("\n", "")
         data = data.lower()
-        print(f"{self.name} -> 📥 Received Data: {data}")
+        logging.info(f"{self.name} -> 📥 Received Data: {data}")
 
         if data.startswith("#read:"):
             self.is_reading = data.endswith("on")

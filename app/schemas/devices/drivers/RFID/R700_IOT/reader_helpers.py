@@ -15,11 +15,11 @@ class ReaderHelpers:
         )
 
     async def stop_inventory(self, session=None):
-        print(f"STOP -> {self.config.get('NAME')}")
+        logging.info(f"STOP -> {self.config.get('NAME')}")
         return await self.post_to_reader(session, self.endpoint_stop)
 
     async def start_inventory(self, session=None):
-        print(f"START -> {self.config.get('NAME')}")
+        logging.info(f"START -> {self.config.get('NAME')}")
         return await self.post_to_reader(
             session, self.endpoint_start, payload=self.config.get("READING_CONFIG")
         )
@@ -32,12 +32,12 @@ class ReaderHelpers:
 
             if method == "post":
                 response = await session.post(endpoint, json=payload, timeout=timeout)
-                print(f"{endpoint} -> {response.status_code}")
+                logging.info(f"{endpoint} -> {response.status_code}")
                 return response.status_code == 204
 
             elif method == "put":
                 response = await session.put(endpoint, json=payload, timeout=timeout)
-                print(f"{endpoint} -> {response.status_code}")
+                logging.info(f"{endpoint} -> {response.status_code}")
                 return response.status_code == 204
 
         except Exception as e:
@@ -48,10 +48,10 @@ class ReaderHelpers:
         try:
             async with session.stream("GET", self.endpointDataStream, timeout=None) as response:
                 if response.status_code != 200:
-                    print(f"Failed to connect to data stream: {response.status_code}")
+                    logging.info(f"Failed to connect to data stream: {response.status_code}")
                     return
-                print("Searching for tags...")
-                print("EPCs of tags detected in field of view:")
+                logging.info("Searching for tags...")
+                logging.info("EPCs of tags detected in field of view:")
 
                 async for line in response.aiter_lines():
                     try:

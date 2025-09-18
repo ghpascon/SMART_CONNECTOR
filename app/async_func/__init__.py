@@ -3,7 +3,7 @@ import importlib
 import inspect
 import os
 import sys
-
+import logging
 from app.core.path import get_path
 
 
@@ -33,6 +33,6 @@ async def create_tasks(module_dir):
             for name, func in inspect.getmembers(module, inspect.iscoroutinefunction):
                 if func.__module__ == module.__name__:
                     tasks.append(asyncio.create_task(func()))
-                    print(f"✅ Added {file} - {name}() -> tasks")
+                    logging.info(f"✅ Added {file} - {name}() -> tasks")
 
     return tasks
