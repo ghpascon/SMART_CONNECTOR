@@ -1,12 +1,7 @@
----
-description: Repository Information Overview
-alwaysApply: true
----
-
-# SMARTX RFID Middleware Information
+# SMARTX SMART_CONNECTOR Information
 
 ## Summary
-SMARTX RFID Middleware is a solution developed for RFID reader management, offering high performance, scalability, and flexibility in system integration. It provides functionality for configuring and controlling readers, managing connections and reading sessions, integrating with external systems, and simulating reader behavior.
+SMARTX SMART_CONNECTOR is a solution developed for RFID reader management, offering high performance, scalability, and flexibility in system integration. It provides functionality for configuring and controlling readers, managing connections and reading sessions, integrating with external systems, and simulating reader behavior.
 
 ## Structure
 - **app/**: Main application code
