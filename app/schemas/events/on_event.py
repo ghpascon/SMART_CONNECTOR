@@ -8,15 +8,6 @@ from ..validators.tag import TagSchema
 
 
 class OnEvent:
-    """
-    Base class that defines event handling for RFID readers.
-
-    Provides methods to handle:
-    - Tag reads (`on_tag`)
-    - Start/Stop events (`on_start`, `on_stop`)
-    - General events (`on_event`)
-    """
-
     async def on_tag(self, tag: dict, verbose: bool = True):
         """
         Handle a tag read event.
@@ -24,14 +15,6 @@ class OnEvent:
         Args:
             tag (dict): Raw tag data.
             verbose (bool): If True, log/print when a new tag is added.
-
-        Workflow:
-        - Validate tag schema using Pydantic.
-        - Update existing tag timestamp if already seen.
-        - Apply RSSI filtering to keep strongest signal.
-        - Try decoding GTIN from EPC (fallback to empty string if not possible).
-        - Save or update the tag in `self.tags`.
-        - Trigger `on_tag_events` for custom handling.
         """
         try:
             # Validate incoming tag structure
@@ -86,9 +69,6 @@ class OnEvent:
     async def on_start(self, device: str) -> None:
         """
         Handle 'start inventory' event for a device.
-
-        Args:
-            device (str): Reader name.
         """
         logging.info(f"[ START ] -> Reader: {device}")
         await self.clear_tags(device)  # Clear tags for this device
@@ -97,12 +77,6 @@ class OnEvent:
     async def on_stop(self, device: str) -> None:
         """
         Handle 'stop inventory' event for a device.
-
-        Args:
-            device (str): Reader name.
-
-        Returns:
-            int: Number of tags still stored.
         """
         logging.info(f"[ STOP ] -> Reader: {device}")
         await self.on_event(device, "inventory", False)
