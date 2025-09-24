@@ -11,18 +11,41 @@ import webbrowser
 username = "ghpascon"
 
 def run_git_command(args, repo_path, check=True, capture_output=False):
-    """Run git command and handle errors gracefully."""
+    """Run git command and handle errors gracefully, suppressing ignored-path warnings."""
     try:
         result = subprocess.run(
             ["git"] + args,
             cwd=repo_path,
             check=check,
-            capture_output=capture_output,
+            capture_output=True,  # always capture to filter stderr
             text=True,
         )
+
+        # Filter out Git warnings about ignored paths
+        if result.stderr:
+            filtered_stderr = "\n".join(
+                line for line in result.stderr.splitlines()
+                if "ignored by one of your .gitignore files" not in line
+            )
+            result.stderr = filtered_stderr
+
+        # If the caller requested capture_output=False, print filtered stderr
+        if not capture_output and result.stderr:
+            print(result.stderr)
+
         return result
+
     except subprocess.CalledProcessError as e:
-        return e  # Return error object to continue
+        # Filter ignored-path warnings in the exception too
+        if e.stderr:
+            filtered_stderr = "\n".join(
+                line for line in e.stderr.splitlines()
+                if "ignored by one of your .gitignore files" not in line and "__pycache__" not in line
+            )
+            e.stderr = filtered_stderr
+            if e.stderr:
+                print(e.stderr)
+        return e
 
 def ensure_git_repo(repo_path: Path):
     if not (repo_path / ".git").exists():

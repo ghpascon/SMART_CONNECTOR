@@ -12,7 +12,6 @@ Para configurar MySQL:
     "DATABASE_URL": "sqlite+aiosqlite:///instance/db.sqlite",
     "DATABASE_URL": "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx"
 """
-
 import asyncio
 import logging
 import os
@@ -40,75 +39,75 @@ SWAGGER_FILE_PATH = "SWAGGER.md"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Gerencia o ciclo de vida assíncrono da aplicação.
+    Manage the asynchronous lifecycle of the application.
 
-    Este context manager lida com os processos de inicialização e encerramento:
-    - Na inicialização: Cria e inicia tarefas em background
-    - No encerramento: Cancela todas as tarefas em background
+    This context manager handles startup and shutdown processes:
+    - On startup: Creates and starts background tasks
+    - On shutdown: Cancels all running background tasks
 
     Args:
-        app: A instância da aplicação FastAPI
+        app: The FastAPI application instance
     """
-    logging.info("Iniciando ciclo de vida da aplicação")
+    logging.info("Starting application lifecycle")
     tasks: List[asyncio.Task] = []
 
     try:
-        # Inicializa tarefas em background
+        # Initialize background tasks
         tasks = await create_tasks(get_path("app/async_func"))
-        logging.info(f"Iniciadas {len(tasks)} tarefas em background")
+        logging.info(f"Started {len(tasks)} background tasks")
         yield
     except Exception as e:
-        logging.error(f"Erro crítico durante o ciclo de vida da aplicação: {e}", exc_info=True)
+        logging.error(f"Critical error during application lifecycle: {e}", exc_info=True)
     finally:
-        # Garante que todas as tarefas sejam canceladas corretamente no encerramento
-        logging.info("Encerrando aplicação, cancelando tarefas em background")
+        # Ensure all background tasks are properly cancelled at shutdown
+        logging.info("Shutting down application, cancelling background tasks")
         for task in tasks:
             if not task.done():
                 task.cancel()
 
         if tasks:
-            # Aguarda que todas as tarefas completem o cancelamento
+            # Wait for all tasks to finish cancellation
             await asyncio.gather(*tasks, return_exceptions=True)
-        logging.info("Encerramento da aplicação completo")
+        logging.info("Application shutdown complete")
 
 
 def load_swagger_description() -> str:
     """
-    Carrega a descrição Swagger em markdown do arquivo.
+    Load the Swagger description in markdown format from a file.
 
     Returns:
-        O conteúdo markdown como string, ou uma mensagem padrão se o arquivo não for encontrado
+        The markdown content as a string, or a default message if the file is missing
     """
     try:
         with open(SWAGGER_FILE_PATH, "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
-        logging.warning(f"{SWAGGER_FILE_PATH} não encontrado. Usando descrição padrão.")
-        return "Documentação não encontrada."
+        logging.warning(f"{SWAGGER_FILE_PATH} not found. Using default description.")
+        return "Documentation not found."
     except Exception as e:
-        logging.error(f"Erro ao carregar documentação Swagger: {e}")
-        return "Erro ao carregar documentação da API."
+        logging.error(f"Error loading Swagger documentation: {e}")
+        return "Error loading API documentation."
 
 
 def create_application() -> FastAPI:
     """
-    Cria e configura a aplicação FastAPI.
+    Create and configure the FastAPI application.
 
-    Esta função:
-    1. Carrega a documentação Swagger
-    2. Cria a instância FastAPI
-    3. Configura middleware
-    4. Configura handlers de exceção
-    5. Monta arquivos estáticos
-    6. Inclui todos os routers
+    This function:
+    1. Loads the Swagger documentation
+    2. Creates the FastAPI instance
+    3. Configures middleware
+    4. Registers exception handlers
+    5. Mounts static files
+    6. Includes all routers
 
     Returns:
-        Instância da aplicação FastAPI configurada
+        Configured FastAPI application instance
     """
-    # Carrega documentação da API
+    # Load API documentation
     markdown_description = load_swagger_description()
 
-    # Cria instância FastAPI
+    # Create FastAPI instance
     app = FastAPI(
         lifespan=lifespan,
         title=settings.data.get("TITLE", "SMARTX"),
@@ -117,27 +116,27 @@ def create_application() -> FastAPI:
         docs_url=None,
     )
 
-    # Configura middleware de sessão
+    # Configure session middleware
     secret_key = settings.data.get("SECRET_KEY")
     if not secret_key:
-        logging.warning("SECRET_KEY não encontrada nas configurações. Usando valor padrão.")
-        secret_key = "smartx_default_secret_key"  # Fallback padrão
+        logging.warning("SECRET_KEY not found in settings. Using default fallback.")
+        secret_key = "smartx_default_secret_key"  # Fallback value
 
     app.add_middleware(
         SessionMiddleware,
         secret_key=secret_key,
         session_cookie="session",
-        https_only=True,  # Recomendado para produção
-        same_site="lax",  # Proteção básica contra CSRF
+        https_only=True,  # Recommended for production
+        same_site="lax",  # Basic CSRF protection
         max_age=SESSION_MAX_AGE,
     )
 
-    # Registra handlers de exceção
+    # Register exception handlers
     @app.exception_handler(404)
     async def not_found_handler(request: Request, exc: Any) -> RedirectResponse:
-        """Trata erros 404 Not Found redirecionando para a página inicial."""
+        """Handle 404 Not Found errors by redirecting to the home page."""
         logging.warning(f"404 Not Found: {request.url}")
-        fast_alerts.add_alert(f"Rota Inválida: {request.url}")
+        fast_alerts.add_alert(f"Invalid route: {request.url}")
         return RedirectResponse(url=request.app.url_path_for("index"))
 
     @app.exception_handler(RequestValidationError)
@@ -145,82 +144,82 @@ def create_application() -> FastAPI:
         request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         """
-        Trata erros de validação de requisição com log detalhado e resposta.
+        Handle request validation errors with detailed logging and response.
 
         Args:
-            request: A requisição recebida que falhou na validação
-            exc: A exceção de validação com detalhes do erro
+            request: The incoming request that failed validation
+            exc: The validation exception with error details
 
         Returns:
-            JSONResponse com detalhes do erro de validação
+            JSONResponse with validation error details
         """
-        # Obtém o corpo da requisição para logging
+        # Get the request body for logging
         body = await request.body()
         body_text = body.decode("utf-8", errors="ignore")
 
-        # Registra o erro de validação com detalhes
+        # Log validation error with details
         logging.error(
-            f"Erro de validação de requisição: {request.method} {request.url}\n"
+            f"Request validation error: {request.method} {request.url}\n"
             f"Headers: {dict(request.headers)}\n"
             f"Body: {body_text}\n"
-            f"Erros: {exc.errors()}"
+            f"Errors: {exc.errors()}"
         )
 
-        # Retorna resposta de erro estruturada
+        # Return structured error response
         return JSONResponse(
             status_code=422,
             content={
                 "detail": exc.errors(),
                 "body": body_text,
-                "message": "Requisição inválida recebida",
+                "message": "Invalid request received",
             },
         )
 
-    # Monta diretório de arquivos estáticos
+    # Mount static files directory
     static_dir = get_path("app/static")
     if os.path.exists(static_dir):
         app.mount("/static", StaticFiles(directory=static_dir), name="static")
     else:
-        logging.warning(f"Diretório de arquivos estáticos não encontrado: {static_dir}")
+        logging.warning(f"Static files directory not found: {static_dir}")
 
-    # Inclui todos os routers do diretório de routers
+    # Include all routers from routers directory
     include_all_routers("app/routers", app)
-    logging.info("Aplicação configurada com sucesso")
+    logging.info("Application successfully configured")
 
     return app
 
 
-# Cria a instância da aplicação FastAPI
+# Create the FastAPI application instance
 app = create_application()
 
-# Código de inicialização do servidor
+# Server startup code
 if __name__ == "__main__":
     import uvicorn
 
-    # Obtém a porta das configurações ou usa o padrão
+    # Get port and host from settings or use defaults
     port = settings.data.get("PORT", DEFAULT_PORT)
     host = settings.data.get("HOST", DEFAULT_HOST)
 
-    logging.info(f"Iniciando servidor em {host}:{port}")
+    logging.info(f"Starting server on {host}:{port}")
 
-    # Abre o navegador se configurado para isso
+    # Open browser automatically if configured
     if settings.data.get("OPEN_BROWSER", True):
         import threading
         import webbrowser
 
         def open_browser() -> None:
-            """Abre o navegador web padrão na URL da aplicação."""
+            """Open the default web browser at the application URL."""
             url = f"http://localhost:{port}"
-            logging.info(f"Abrindo navegador em {url}")
+            logging.info(f"Opening browser at {url}")
             webbrowser.open_new(url)
 
-        # Abre o navegador após um pequeno atraso para permitir a inicialização do servidor
+        # Delay opening browser to allow server startup
         threading.Timer(1.0, open_browser).start()
 
-    # Inicia o servidor uvicorn
+    # Start uvicorn server
     try:
         uvicorn.run(
             app, host=host, port=port, access_log=False, log_level="critical", log_config=None
         )
     except Exception as e:
-        logging.error(f"Falha ao iniciar servidor: {e}")
+        logging.error(f"Failed to start server: {e}")
