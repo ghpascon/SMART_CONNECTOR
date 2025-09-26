@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 class TagSchema(BaseModel):
     device: str = Field("DEVICE01")
     epc: str = Field("000000000000000000000001")
-    tid: Optional[str] = Field(None)
+    tid: Optional[str] = Field("000000000000000000000001")
     ant: Optional[int] = 0
     rssi: Optional[int] = 0
 
