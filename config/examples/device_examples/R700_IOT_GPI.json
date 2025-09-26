@@ -11,7 +11,7 @@
         "inventorySearchMode": "dual-target",
         "inventorySession": 1,
         "receiveSensitivityDbm": -80,
-        "rfMode": 1002,
+        "rfMode": 4,
         "transmitPowerCdbm": 3300
       },
       {
@@ -21,7 +21,7 @@
         "inventorySearchMode": "dual-target",
         "inventorySession": 1,
         "receiveSensitivityDbm": -80,
-        "rfMode": 1002,
+        "rfMode": 4,
         "transmitPowerCdbm": 3300
       },
       {
@@ -31,7 +31,7 @@
         "inventorySearchMode": "dual-target",
         "inventorySession": 1,
         "receiveSensitivityDbm": -80,
-        "rfMode": 1002,
+        "rfMode": 4,
         "transmitPowerCdbm": 3300
       },
       {
@@ -41,7 +41,7 @@
         "inventorySearchMode": "dual-target",
         "inventorySession": 1,
         "receiveSensitivityDbm": -80,
-        "rfMode": 1002,
+        "rfMode": 4,
         "transmitPowerCdbm": 3300
       }
     ],

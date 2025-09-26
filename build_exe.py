@@ -1,6 +1,6 @@
-# To run with Poetry:
-# poetry run python build_exe.py
-
+'''
+poetry run python build_exe.py
+'''
 
 import os
 import PyInstaller.__main__
