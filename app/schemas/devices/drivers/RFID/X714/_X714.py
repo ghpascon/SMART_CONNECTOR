@@ -1,17 +1,24 @@
+import asyncio
 from .on_receive import OnReceive
 from .rfid import RfidCommands
 from .serial_protocol import SerialProtocol
+from .ble_protocol import BLEProtocol
 
-class X714(SerialProtocol, OnReceive, RfidCommands):
+class X714(SerialProtocol, OnReceive, RfidCommands, BLEProtocol):
     def __init__(self, config, name):
         self.is_rfid_reader = True
 
+        self.name = name
         self.config = config
-        self.port = self.config.get("CONNECTION")
-        self.baudrate = self.config.get("BAUDRATE")
+
+        self.is_bluetooth = self.config.get("IS_BLUETOOTH", False)
+        self.ble_name = self.config.get("BLE_NAME", "XPAD_PLUS")
+        self.init_ble_vars()
+
+        self.port = self.config.get("CONNECTION", "AUTO")
+        self.baudrate = self.config.get("BAUDRATE", 115200)
         self.vid = self.config.get("VID", 1)
         self.pid = self.config.get("PID", 1)
-        self.name = name
 
         self.transport = None
         self.on_con_lost = None
@@ -25,7 +32,13 @@ class X714(SerialProtocol, OnReceive, RfidCommands):
 
 
     def write(self, to_send, verbose=True):
-        self.write_serial(to_send, verbose)
+        if self.is_bluetooth:
+            asyncio.run(self.write_ble(to_send.encode(), verbose))
+        else:
+            self.write_serial(to_send, verbose)
 
     async def connect(self):
-        await self.connect_serial()
+        if self.is_bluetooth:
+            await self.connect_ble()
+        else:
+            await self.connect_serial()

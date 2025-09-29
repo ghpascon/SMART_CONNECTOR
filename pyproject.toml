@@ -27,6 +27,7 @@ dependencies = [
     "pygame (==2.6.1)",
     "httpx (==0.28.1)",
     "gmqtt (>=0.7.0,<0.8.0)",
+    "bleak (==0.21.1)"
 ]
 
 

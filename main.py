@@ -12,9 +12,14 @@ Para configurar MySQL:
     "DATABASE_URL": "sqlite+aiosqlite:///instance/db.sqlite",
     "DATABASE_URL": "mysql+aiomysql://root:admin@localhost:3306/middleware_smartx"
 """
+import sys
+sys.coinit_flags = 0 
 import asyncio
+if hasattr(asyncio, "WindowsSelectorEventLoopPolicy"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 import logging
 import os
+
 from contextlib import asynccontextmanager
 from typing import Any, List
 

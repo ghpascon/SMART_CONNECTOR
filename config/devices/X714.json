@@ -1,5 +1,7 @@
 {
   "READER": "X714",
+  "IS_BLUETOOTH": true,
+  "BLE_NAME": "XPAD_PLUS",
   "CONNECTION": "AUTO",
   "VID": 1,
   "PID": 1,
