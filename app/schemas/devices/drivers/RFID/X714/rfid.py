@@ -47,6 +47,9 @@ class RfidCommands:
         # BUZZER
         set_cmd += f"|BUZZER:{self.config.get('BUZZER')}"
 
+        # DECODE_GTIN
+        set_cmd += f"|DECODE_GTIN:{False}"
+
         set_cmd = set_cmd.lower()
         set_cmd = set_cmd.replace("true", "on").replace("false", "off")
         self.write(set_cmd)
