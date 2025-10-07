@@ -30,9 +30,11 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.async_func import create_tasks
-from app.core.config import settings
+from app.core.settings import settings
 from app.core.fast_alerts import fast_alerts
 from app.core.path import get_path, include_all_routers
+from app.core.middleware import setup_middlewares
+from app.core.exeption_handlers import setup_exeptions
 
 # Application constants
 DEFAULT_PORT = 5000
@@ -127,58 +129,8 @@ def create_application() -> FastAPI:
         logging.warning("SECRET_KEY not found in settings. Using default fallback.")
         secret_key = "smartx_default_secret_key"  # Fallback value
 
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key=secret_key,
-        session_cookie="session",
-        https_only=True,  # Recommended for production
-        same_site="lax",  # Basic CSRF protection
-        max_age=SESSION_MAX_AGE,
-    )
-
-    # Register exception handlers
-    @app.exception_handler(404)
-    async def not_found_handler(request: Request, exc: Any) -> RedirectResponse:
-        """Handle 404 Not Found errors by redirecting to the home page."""
-        logging.warning(f"404 Not Found: {request.url}")
-        fast_alerts.add_alert(f"Invalid route: {request.url}")
-        return RedirectResponse(url=request.app.url_path_for("index"))
-
-    @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(
-        request: Request, exc: RequestValidationError
-    ) -> JSONResponse:
-        """
-        Handle request validation errors with detailed logging and response.
-
-        Args:
-            request: The incoming request that failed validation
-            exc: The validation exception with error details
-
-        Returns:
-            JSONResponse with validation error details
-        """
-        # Get the request body for logging
-        body = await request.body()
-        body_text = body.decode("utf-8", errors="ignore")
-
-        # Log validation error with details
-        logging.error(
-            f"Request validation error: {request.method} {request.url}\n"
-            f"Headers: {dict(request.headers)}\n"
-            f"Body: {body_text}\n"
-            f"Errors: {exc.errors()}"
-        )
-
-        # Return structured error response
-        return JSONResponse(
-            status_code=422,
-            content={
-                "detail": exc.errors(),
-                "body": body_text,
-                "message": "Invalid request received",
-            },
-        )
+    setup_exeptions(app)
+    setup_middlewares(app)
 
     # Mount static files directory
     static_dir = get_path("app/static")

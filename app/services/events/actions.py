@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import httpx
 from gmqtt import Client as MQTTClient
 
-from app.core.config import settings
+from app.core.settings import settings
 from app.core.indicator import beep
 from app.db.database import database_engine
 from app.models.rfid import DbEvent, DbTag
@@ -76,9 +76,6 @@ class Actions:
     # -------------------------------
     # EVENTS HANDLING
     # -------------------------------
-# -------------------------------
-# EVENTS HANDLING
-# -------------------------------
     async def on_events(self, device, event_type, event_data, timestamp):
         self.events.appendleft({
             "timestamp": timestamp,

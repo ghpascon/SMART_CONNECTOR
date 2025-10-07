@@ -5,7 +5,7 @@ import time
 import serial.tools.list_ports
 import serial_asyncio
 
-from app.core.config import settings
+from app.core.settings import settings
 from app.schemas.events import events
 
 from .on_receive import OnReceive

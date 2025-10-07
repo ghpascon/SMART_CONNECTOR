@@ -20,8 +20,9 @@ from app import models  # Ensure models are imported
 
 from .session import Base
 
+from app.core.settings import settings
+
 # Constants
-DEFAULT_CONFIG_PATH = "config/actions.json"
 DEFAULT_POOL_SIZE = 10
 DEFAULT_MAX_OVERFLOW = 20
 DEFAULT_REPORT_FILENAME = "report.zip"
@@ -54,40 +55,16 @@ class DatabaseEngine:
         if isinstance(result, dict) and "error" in result:
             logging.error(f"[DatabaseEngine.__init__] Failed to initialize: {result['error']}")
 
-    def _load_database_url(self, path: str = DEFAULT_CONFIG_PATH) -> Optional[str]:
-        """
-        Load database URL from configuration file.
-
-        Args:
-            path: Path to configuration file
-
-        Returns:
-            Database URL string or None if not found/invalid
-        """
+    def _load_database_url(self) -> Optional[str]:
         try:
-            if not os.path.exists(path):
-                logging.error(
-                    f"[DatabaseEngine._load_database_url] Configuration file not found: {path}"
-                )
-                return None
-
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-
-            url = data.get("DATABASE_URL")
+            url = settings.actions_data.get("DATABASE_URL")
             if not url:
                 logging.error(
-                    f"[DatabaseEngine._load_database_url] 'DATABASE_URL' not found in file: {path}"
+                    f"[DatabaseEngine._load_database_url] 'DATABASE_URL' is None"
                 )
                 return None
 
             return url
-
-        except json.JSONDecodeError as e:
-            logging.error(
-                f"[DatabaseEngine._load_database_url] JSON decode error in file {path}: {e}"
-            )
-            return None
         except Exception as e:
             logging.error(
                 f"[DatabaseEngine._load_database_url] Unexpected error loading DATABASE_URL: {e}"
@@ -223,24 +200,28 @@ class DatabaseEngine:
     async def get_db(self):
         """
         Async context manager for database sessions.
+        Ensures rollback on exceptions and proper cleanup.
 
         Yields:
-            AsyncSession or None if session creation fails
+            AsyncSession instance
         """
         if self.SessionLocal is None:
-            logging.error(
-                "[DatabaseEngine.get_db] Session not initialized, cannot get database connection."
-            )
-            yield None
-            return
+            logging.error("[DatabaseEngine.get_db] Session not initialized.")
+            raise RuntimeError("Database session factory not initialized.")
 
+        db: AsyncSession = self.SessionLocal()
         try:
-            async with self.SessionLocal() as db:
-                yield db
+            yield db
+            # Commit if no exceptions occurred
+            await db.commit()
         except Exception as e:
-            logging.error(f"[DatabaseEngine.get_db] Error getting database session: {e}")
-            yield None
-
+            # Rollback in case of errors
+            await db.rollback()
+            logging.exception(f"[DatabaseEngine.get_db] Exception occurred, rolled back: {e}")
+            raise  # Re-raise the exception so callers can handle it
+        finally:
+            # Close session to release connection
+            await db.close()
     async def clear_db(self, days: int) -> Dict[str, Any]:
         """
         Clear old records from database tables.
