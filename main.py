@@ -21,17 +21,13 @@ import logging
 import os
 
 from contextlib import asynccontextmanager
-from typing import Any, List
+from typing import List
 
-from fastapi import FastAPI, Request
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
 
 from app.async_func import create_tasks
 from app.core.settings import settings
-from app.core.fast_alerts import fast_alerts
 from app.core.path import get_path, include_all_routers
 from app.core.middleware import setup_middlewares
 from app.core.exeption_handlers import setup_exeptions

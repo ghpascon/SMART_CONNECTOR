@@ -20,4 +20,8 @@ class OnEvent:
             "ant": tag.get("antennaPort"),
             "rssi": int(tag.get("peakRssiCdbm", 0) / 100),
         }
-        asyncio.create_task(events.on_tag(current_tag))
+        target = await events.on_tag(current_tag)
+        if target is None:
+            return
+        
+        asyncio.create_task(self.write_epc({"target_identifier":"tid", "target_value":current_tag.get("tid"), "new_epc":target, "password":"00000000"}))

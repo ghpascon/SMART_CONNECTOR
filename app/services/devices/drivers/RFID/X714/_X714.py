@@ -3,8 +3,9 @@ from .on_receive import OnReceive
 from .rfid import RfidCommands
 from .serial_protocol import SerialProtocol
 from .ble_protocol import BLEProtocol
+from .write_commands import WriteCommands
 
-class X714(SerialProtocol, OnReceive, RfidCommands, BLEProtocol):
+class X714(SerialProtocol, OnReceive, RfidCommands, BLEProtocol, WriteCommands):
     def __init__(self, config, name):
         self.is_rfid_reader = True
 
@@ -39,6 +40,7 @@ class X714(SerialProtocol, OnReceive, RfidCommands, BLEProtocol):
 
     async def connect(self):
         if self.is_bluetooth:
+            raise NotImplementedError()
             await self.connect_ble()
         else:
             await self.connect_serial()
