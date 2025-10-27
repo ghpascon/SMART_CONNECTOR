@@ -29,6 +29,7 @@ class Settings:
                 with open(actions_path, "r") as f:
                     self.actions_data = json.load(f)
             except Exception as e:
+                self.actions_data = {}
                 logging.error(f"Error loading {actions_path}: {e}")
 
         logger_manager.load(log_path=self.actions_data.get("LOG_PATH", "Logs"))

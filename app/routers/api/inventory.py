@@ -77,7 +77,7 @@ async def get_tags_count():
     response_description="List of EPC strings",
 )
 async def get_epcs():
-    return [tag.get("epc") for tag in events.tags.values() if tag.get("epc") is not None]
+    return events.get_epcs()
 
 @router.get(
     "/get_gtin_count",

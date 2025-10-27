@@ -53,5 +53,7 @@ class Events(OnEvent, Actions):
         except Exception as e:
             logging.error(f"❌ Error saving tags: {e}")
 
+    def get_epcs(self):
+        return [tag.get("epc") for tag in self.tags.values() if tag.get("epc") is not None]
 
 events = Events()

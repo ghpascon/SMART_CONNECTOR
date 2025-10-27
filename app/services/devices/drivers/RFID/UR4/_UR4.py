@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import socket
 
 from app.services.events import events
 
@@ -47,7 +48,7 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
             try:
                 logging.info(f"Tentando conectar ao leitor em {self.ip}:{self.port}")
                 self.reader, self.writer = await asyncio.wait_for(
-                    asyncio.open_connection(self.ip, self.port), timeout=3
+                    asyncio.open_connection(self.ip, self.port), timeout=5
                 )
                 self.is_connected = True
                 asyncio.create_task(events.on_connect(self.name))
@@ -74,11 +75,15 @@ class UR4(ReaderHelpers, OnEvent, SetupReader, WriteCommands):
                 self.is_connected = False
                 asyncio.create_task(events.on_disconnect(self.name))
                 logging.info("Conexão perdida, tentando reconectar...")
-
+            except (asyncio.TimeoutError, ConnectionRefusedError, OSError, PermissionError) as e:
+                self.is_connected = False
+                logging.warning(f"⏳ Falha ao conectar ({e.__class__.__name__}): {e}. Tentando novamente em 3s...")
             except Exception as e:
                 self.is_connected = False
                 asyncio.create_task(events.on_disconnect(self.name))
                 logging.error(f"❌ Erro: {e}. Tentando reconectar em 3 segundos...")
+            except:
+                logging.error(f"❌ Erro desconhecido")
 
             await asyncio.sleep(3)
 
