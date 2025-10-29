@@ -52,6 +52,7 @@ async def tag_list(tag_generator: TagListSimulator):
             {
                 "device": tag_generator.device,
                 "epc": epc_hex,
+                "tid": None,
             }
         )
 

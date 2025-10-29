@@ -51,11 +51,17 @@ class Actions:
         http_post = self.actions.get("HTTP_POST")
         mqtt_url = self.actions.get("MQTT_URL")
         xtrack_post = self.actions.get("XTRACK_URL")
+        payload = {
+            "timestamp": datetime.now().isoformat(),
+            "device": tag.get("device", ""),
+            "event_type": "tag",
+            "event_data": tag,
+        }
 
         if http_post:
-            asyncio.create_task(self.send_payload(tag, http_post))
+            asyncio.create_task(self.send_payload(payload, http_post))
         if mqtt_url:
-            asyncio.create_task(self.send_payload(tag, mqtt_url, mqtt=True))
+            asyncio.create_task(self.send_payload(payload, mqtt_url, mqtt=True))
         if xtrack_post:
             asyncio.create_task(self.post_tag_xtrack(tag, xtrack_post))
 
@@ -142,8 +148,20 @@ class Actions:
         await self.mqtt_client.connect(broker, port)
         await self.mqtt_connected.wait()  # ensure connection before publishing
 
+
+    def convert_datetimes(self,obj):
+        """Converte qualquer datetime em string ISO dentro de dicionários aninhados."""
+        if isinstance(obj, dict):
+            return {k: self.convert_datetimes(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.convert_datetimes(v) for v in obj]
+        elif isinstance(obj, datetime):
+            return obj.isoformat()
+        else:
+            return obj
     async def send_payload(self, payload, endpoint, mqtt=False):
         try:
+            payload = self.convert_datetimes(payload)
             ts = payload.get("timestamp")
             if isinstance(ts, datetime):
                 payload["timestamp"] = ts.isoformat()
