@@ -52,12 +52,12 @@ class TCPProtocol(TCPHelpers):
 
                 # Verifica IP antes (evita travar no DNS)
                 try:
-                    socket.inet_aton(ip)
+                    resolved_ip = socket.gethostbyname(ip)
                 except OSError:
                     raise ValueError(f"Invalid IP address: {ip}")
 
                 # Tenta abrir conexão com timeout real
-                connect_task = asyncio.open_connection(ip, port)
+                connect_task = asyncio.open_connection(resolved_ip, port)
                 self.reader, self.writer = await asyncio.wait_for(connect_task, timeout=3)
 
                 self.is_connected = True
@@ -87,7 +87,7 @@ class TCPProtocol(TCPHelpers):
                 logging.warning(f"⏱️ [TIMEOUT] {self.name} - No response from {ip}:{port}")
             except ValueError as e:
                 logging.error(f"❌ [INVALID IP] {self.name}: {e}")
-                retry_delay = 10
+                retry_delay = 5
             except OSError as e:
                 logging.error(f"💥 [NETWORK ERROR] {self.name}: {e}")
                 retry_delay = min(retry_delay * 2, 30)  # backoff até 30s

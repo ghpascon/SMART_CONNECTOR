@@ -2,7 +2,7 @@
   "READER": "X714",
   "_CONNECTION_TYPE": ["SERIAL", "BLE", "TCP"],
   "CONNECTION_TYPE": "TCP",
-  "CONNECTION": "192.168.137.254",
+  "CONNECTION": "smtx-a85204d9b4dc",
   "VID": 1,
   "PID": 1,
   "BLE_NAME": "XPAD_PLUS",
