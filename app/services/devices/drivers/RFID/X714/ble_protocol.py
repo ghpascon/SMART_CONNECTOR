@@ -61,6 +61,9 @@ class BLEProtocol:
         """Main BLE connection and operation loop."""
         while not self.ble_stop:
             try:
+                if self.is_connected:
+                    self.is_connected = False    
+                    asyncio.create_task(events.on_disconnect(self.name))
                 address = await self.scan_for_device()
                 if not address:
                     continue
