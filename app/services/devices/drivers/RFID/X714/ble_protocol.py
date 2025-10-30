@@ -61,12 +61,19 @@ class BLEProtocol:
         """Main BLE connection and operation loop."""
         while not self.ble_stop:
             try:
+                # Se já estava conectado antes, emite o evento de desconexão
                 if self.is_connected:
                     self.is_connected = False    
                     asyncio.create_task(events.on_disconnect(self.name))
-                address = await self.scan_for_device()
-                if not address:
-                    continue
+
+                # Escolhe o endereço conforme o modo
+                if self.is_auto:
+                    address = await self.scan_for_device()
+                    if not address:
+                        continue
+                else:
+                    address = self.connection  # Usa o MAC address fixo
+                    logging.info(f"🔗 Using fixed BLE address: {address}")
 
                 logging.info(f"Attempting to connect to {address}...")
                 client = BleakClient(address)
@@ -93,7 +100,7 @@ class BLEProtocol:
                         decoded = data.decode(errors="ignore")
                         asyncio.create_task(self.on_receive(decoded))
 
-                    # Automatically enable notifications
+                    # Habilita notificações automaticamente
                     self.notify_enabled = False
                     for service in client.services:
                         for char in service.characteristics:
@@ -102,7 +109,7 @@ class BLEProtocol:
                                     await client.start_notify(char.uuid, handle_notification)
                                     self.is_connected = True
                                     asyncio.create_task(events.on_connect(self.name))
-                                    logging.info("✅ Ble connection successfully established.")
+                                    logging.info("✅ BLE connection successfully established.")
                                     asyncio.create_task(self.config_reader())                                    
                                     logging.info(f"🟢 Notifications enabled for {char.uuid}")
                                     self.notify_enabled = True
@@ -112,7 +119,7 @@ class BLEProtocol:
                     if not self.notify_enabled:
                         logging.warning("⚠️ No characteristics with notify property found!")
 
-                    # Main loop
+                    # Loop principal de manutenção da conexão
                     last_ping = 0
                     while client.is_connected and not self.ble_stop:
                         now = asyncio.get_event_loop().time()
@@ -132,6 +139,7 @@ class BLEProtocol:
             finally:
                 self.connected_ble_event.clear()
                 self.client_ble = None
+
 
     # ---------------- Thread Wrapper ----------------
     def connect_ble(self):

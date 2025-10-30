@@ -21,7 +21,7 @@ class X714(SerialProtocol, OnReceive, RfidCommands, BLEProtocol, WriteCommands, 
 
         self.tcp_port = self.config.get("TCP_PORT", 23)
 
-        self.ble_name = self.config.get("BLE_NAME", "XPAD_PLUS")
+        self.ble_name = self.config.get("BLE_NAME", "SMTX")
         self.init_ble_vars()
 
         self.connection = self.config.get("CONNECTION", "AUTO")

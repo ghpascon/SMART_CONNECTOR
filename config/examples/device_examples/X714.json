@@ -5,7 +5,7 @@
   "CONNECTION": "AUTO",
   "VID": 1,
   "PID": 1,
-  "BLE_NAME": "XPAD_PLUS",
+  "BLE_NAME": "SMTX",
   "TCP_PORT": 23,
   "BAUDRATE": 115200,
   "BUZZER": true,
