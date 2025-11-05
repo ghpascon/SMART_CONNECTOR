@@ -85,6 +85,7 @@ class TCPProtocol(TCPHelpers):
 
             except asyncio.TimeoutError:
                 logging.warning(f"⏱️ [TIMEOUT] {self.name} - No response from {ip}:{port}")
+                continue
             except ValueError as e:
                 logging.error(f"❌ [INVALID IP] {self.name}: {e}")
                 retry_delay = 5
