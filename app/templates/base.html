@@ -78,7 +78,7 @@
 
     <!-- Alerts -->
     <div class="container">
-      {% for alert in alerts %}
+      {% for alert in get_alerts() %}
       <div
         class="alert {{ alert.style }} alert-dismissible fade show"
         role="alert"
