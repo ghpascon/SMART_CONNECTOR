@@ -125,6 +125,8 @@
     if (isFetchingTags) return;
     isFetchingTags = true;
     try {
+      {# const response = await fetch("{{ url_for('get_gtin_count') }}"); #}
+
       const response = await fetch("{{ url_for('get_tags') }}");
       const data = await response.json();
 

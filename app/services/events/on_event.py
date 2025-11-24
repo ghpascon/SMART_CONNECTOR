@@ -21,49 +21,82 @@ class OnEvent:
             tag_validado = TagSchema(**tag)
 
             # Check if tag already exists
-            tag_exist = False
             if tag_validado.epc in self.tags:
-                self.tags[tag_validado.epc]["timestamp"] = datetime.now()
-                tag_exist = True
-
-            # If tag already exists, only update if stronger RSSI
-            if tag_exist:
-                if tag_validado.rssi is None or self.tags[tag_validado.epc].get("rssi") is not None:
-                    return None
-                if tag_validado.rssi <= self.tags[tag_validado.epc].get("rssi"):
-                    return None
-
-            # Try decoding GTIN from EPC
-            try:
-                gtin = SGTIN.decode(tag_validado.epc).gtin
-            except Exception:
-                gtin = ""
-
-            # Build normalized tag object
-            current_tag = {
-                "timestamp": datetime.now(),
-                "device": tag_validado.device,
-                "epc": tag_validado.epc,
-                "tid": tag_validado.tid,
-                "ant": tag_validado.ant,
-                "rssi": tag_validado.rssi,
-                "gtin": gtin,
-            }
-
-            # Save tag
-            self.tags[tag_validado.epc] = current_tag
-
-            # Log only when new tag is detected
-            if verbose and not tag_exist:
-                logging.info(f"[TAG] {current_tag}")
-
-            # Trigger event hook
-            await self.on_tag_events(current_tag)
+                # APPROACH 1: Tag already exists - Handle updates
+                await self._handle_existing_tag(tag_validado, verbose)
+            else:
+                # APPROACH 2: New tag detected - Handle first detection
+                await self._handle_new_tag(tag_validado, verbose)
 
         except ValidationError as e:
             logging.error(f"❌ Invalid tag: {e.json()}")
 
         return None
+
+    async def _handle_existing_tag(self, tag_validado: TagSchema, verbose: bool = True):
+        """
+        Handle updates for an existing tag.
+        
+        Args:
+            tag_validado (TagSchema): Validated tag data.
+            verbose (bool): If True, log updates.
+        """
+        existing_tag = self.tags[tag_validado.epc]
+        
+        # Update timestamp for any detection
+        existing_tag["timestamp"] = datetime.now()
+        
+        # Update RSSI only if new value is stronger (closer to 0)
+        if tag_validado.rssi is not None:
+            current_rssi = existing_tag.get("rssi")
+            if current_rssi is None or abs(tag_validado.rssi) < abs(current_rssi):
+                existing_tag["rssi"] = tag_validado.rssi
+                existing_tag["ant"] = tag_validado.ant  # Update antenna too
+                
+                if verbose:
+                    logging.info(f"[TAG UPDATE] EPC: {tag_validado.epc}, New RSSI: {tag_validado.rssi}, Ant: {tag_validado.ant}")
+                
+        # Increment count for existing tag
+        existing_tag["count"] = existing_tag.get("count", 1) + 1
+        
+        # Trigger event hook for existing tag
+        await self.on_tag_events(existing_tag)
+        
+    async def _handle_new_tag(self, tag_validado: TagSchema, verbose: bool = True):
+        """
+        Handle first detection of a new tag.
+        
+        Args:
+            tag_validado (TagSchema): Validated tag data.
+            verbose (bool): If True, log new tag detection.
+        """
+        # Try decoding GTIN from EPC
+        try:
+            gtin = SGTIN.decode(tag_validado.epc).gtin
+        except Exception:
+            gtin = ""
+
+        # Build normalized tag object for new tag
+        current_tag = {
+            "timestamp": datetime.now(),
+            "device": tag_validado.device,
+            "epc": tag_validado.epc,
+            "tid": tag_validado.tid,
+            "ant": tag_validado.ant,
+            "rssi": tag_validado.rssi,
+            "gtin": gtin,
+            "count": 1  
+        }
+
+        # Save new tag
+        self.tags[tag_validado.epc] = current_tag
+
+        # Log new tag detection
+        if verbose:
+            logging.info(f"[NEW TAG] {current_tag}")
+
+        # Trigger event hook for new tag
+        await self.on_tag_events(current_tag)
 
     async def on_start(self, device: str) -> None:
         """
