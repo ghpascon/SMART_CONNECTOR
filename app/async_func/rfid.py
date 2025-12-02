@@ -9,7 +9,24 @@ from app.services.events import events
 
 
 async def connect_devices():
-    await devices.create_connect_loop()
+    """Inicializa o sistema de conexão de devices com tratamento robusto de erros."""
+    try:
+        if not devices._initialized:
+            logging.error("❌ Sistema de devices não foi inicializado corretamente")
+            return
+            
+        logging.info("🚀 Iniciando sistema de conexão de devices...")
+        await devices.create_connect_loop()
+        logging.info("✅ Sistema de conexão iniciado com sucesso")
+        
+    except Exception as e:
+        logging.error(f"❌ Erro ao iniciar conexão dos devices: {e}")
+        # Tenta reinicializar em caso de erro
+        try:
+            devices.get_devices_from_config()
+            await devices.create_connect_loop()
+        except Exception as retry_error:
+            logging.error(f"❌ Falha ao tentar recuperar sistema: {retry_error}")
 
 
 async def periodic_clear_tags():

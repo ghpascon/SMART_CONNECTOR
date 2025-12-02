@@ -32,9 +32,27 @@ class R700_IOT(OnEvent, ReaderHelpers, WriteCommands):
 
         self.is_connected = False
         self.is_reading = False
+        self._stop_connection = False
+
+    async def disconnect(self):
+        """Desconecta o reader de forma segura."""
+        logging.info(f"🔌 Disconnecting R700_IOT reader: {self.name}")
+        self._stop_connection = True
+        
+        if self.is_reading:
+            try:
+                async with httpx.AsyncClient(auth=self.auth, verify=False, timeout=5.0) as session:
+                    await self.stop_inventory(session)
+            except Exception as e:
+                logging.warning(f"⚠️ Error stopping inventory during disconnect: {e}")
+        
+        self.is_connected = False
+        self.is_reading = False
+        asyncio.create_task(events.on_disconnect(self.name))
 
     async def connect(self):
-        while True:
+        self._stop_connection = False
+        while not self._stop_connection:
             async with httpx.AsyncClient(auth=self.auth, verify=False, timeout=10.0) as session:
                 if self.is_connected:
                     asyncio.create_task(events.on_disconnect(self.name))

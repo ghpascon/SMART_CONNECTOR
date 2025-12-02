@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -68,49 +69,119 @@ async def get_example_config(device_name: str):
 @router.post(
     "/create_device/{device_name}",
     summary="Create a new device",
-    description="Creates a new device with the given name and configuration.",
+    description="Creates a new device with the given name and configuration. The device name will be automatically adjusted if it already exists.",
 )
 async def create_device(device_name: str, data: dict):
     try:
-        return await devices.create_device(data, device_name)
+        # Verifica se o sistema está em estado válido
+        if devices._updating:
+            raise HTTPException(
+                status_code=503, 
+                detail="System is currently updating devices, please try again in a few moments"
+            )
+            
+        # Valida a estrutura básica dos dados
+        if not isinstance(data, dict) or not data.get("READER"):
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid configuration: missing required READER field"
+            )
+            
+        # Valida o nome do device
+        if not device_name or not device_name.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Device name cannot be empty"
+            )
+            
+        logging.info(f"🆕 Creating new device '{device_name}' of type '{data.get('READER')}'")
+        result = await devices.create_device(data, device_name.strip())
+        
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+            
+        return result
+        
     except HTTPException:
         raise
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except Exception as e:
+        logging.error(f"❌ Unexpected error creating device '{device_name}': {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 @router.put(
     "/update_device/{device_name}",
     summary="Update an existing device",
-    description="Updates the configuration of an existing device.",
+    description="Updates the configuration of an existing device. The device will be safely disconnected during the update process.",
 )
 async def update_device(device_name: str, data: dict):
     try:
+        # Verifica se o sistema está em estado válido
+        if devices._updating:
+            raise HTTPException(
+                status_code=503, 
+                detail="System is currently updating devices, please try again in a few moments"
+            )
+            
+        # Valida o device (não precisa estar conectado para atualizar)
         status, msg = validate_device(device=device_name, need_connected=False)
         if not status:
             raise HTTPException(status_code=422, detail=msg)
-        return await devices.update_device(data, device_name)
+            
+        # Valida a estrutura básica dos dados
+        if not isinstance(data, dict) or not data.get("READER"):
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid configuration: missing required READER field"
+            )
+            
+        logging.info(f"🔄 Updating device '{device_name}' with new configuration")
+        result = await devices.update_device(data, device_name)
+        
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+            
+        return result
+        
     except HTTPException:
         raise
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except Exception as e:
+        logging.error(f"❌ Unexpected error updating device '{device_name}': {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 @router.delete(
     "/delete_device/{device_name}",
     summary="Delete a device",
-    description="Deletes the specified device from the system.",
+    description="Deletes the specified device from the system. The device will be safely disconnected before deletion.",
 )
 async def delete_device(device_name: str):
     try:
+        # Verifica se o sistema está em estado válido
+        if devices._updating:
+            raise HTTPException(
+                status_code=503, 
+                detail="System is currently updating devices, please try again in a few moments"
+            )
+            
+        # Valida se o device existe
         status, msg = validate_device(device=device_name, need_connected=False)
         if not status:
             raise HTTPException(status_code=422, detail=msg)
-        return await devices.delete_device(name=device_name)
+            
+        logging.info(f"🗑️ Deleting device '{device_name}'")
+        result = await devices.delete_device(name=device_name)
+        
+        if "error" in result:
+            raise HTTPException(status_code=404, detail=result["error"])
+            
+        return result
+        
     except HTTPException:
         raise
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except Exception as e:
+        logging.error(f"❌ Unexpected error deleting device '{device_name}': {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 @router.post(
@@ -189,3 +260,26 @@ async def get_device_state(request: Request, device: str):
         description = "Connected"
 
     return {"state": state, "description": description}
+
+
+@router.get(
+    "/system_status",
+    summary="Get system status",
+    description="Returns comprehensive status information about the devices management system.",
+)
+async def get_system_status():
+    """Return system-wide status information for monitoring and debugging."""
+    try:
+        status = devices.get_system_status()
+        return {
+            "status": "ok",
+            "timestamp": datetime.now().isoformat(),
+            **status
+        }
+    except Exception as e:
+        logging.error(f"❌ Error getting system status: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
