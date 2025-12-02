@@ -53,14 +53,8 @@ class OnEvent:
                 existing_tag["rssi"] = tag_validado.rssi
                 existing_tag["ant"] = tag_validado.ant  # Update antenna too
                 
-                if verbose:
-                    logging.info(f"[TAG UPDATE] EPC: {tag_validado.epc}, New RSSI: {tag_validado.rssi}, Ant: {tag_validado.ant}")
-                
         # Increment count for existing tag
         existing_tag["count"] = existing_tag.get("count", 1) + 1
-        
-        # Trigger event hook for existing tag
-        await self.on_tag_events(existing_tag)
         
     async def _handle_new_tag(self, tag_validado: TagSchema, verbose: bool = True):
         """
@@ -93,7 +87,7 @@ class OnEvent:
 
         # Log new tag detection
         if verbose:
-            logging.info(f"[NEW TAG] {current_tag}")
+            logging.info(f"[TAG] {current_tag}")
 
         # Trigger event hook for new tag
         await self.on_tag_events(current_tag)

@@ -127,3 +127,28 @@ class TagListSimulator(BaseModel):
                 f"{info.field_name} must contain only hexadecimal characters (0-9, a-f)"
             )
         return v.lower()
+
+
+class TagGtinSimulator(BaseModel):
+    device: str = Field("DEVICE01")
+    gtin: str = Field("07894900011517")
+    qtd: int = 50
+    start_serial: int = Field(1)
+
+    @field_validator("gtin")
+    def validate_gtin(cls, v):
+        if not re.fullmatch(r"\d{14}", v):
+            raise ValueError("GTIN must have exactly 14 digits")
+        return v
+
+    @field_validator("qtd")
+    def validate_qtd(cls, v):
+        if v <= 0 or v > 10000:
+            raise ValueError("qtd must be between 1 and 10000")
+        return v
+
+    @field_validator("start_serial")
+    def validate_start_serial(cls, v):
+        if v < 1:
+            raise ValueError("start_serial must be at least 1")
+        return v
