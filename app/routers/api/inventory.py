@@ -139,6 +139,6 @@ async def clear_all_tags():
 )
 async def any_reading():
     for device in devices.devices.values():
-        if device.is_reading:
+        if hasattr(device, "is_reading") and device.is_reading:
             return {"is_reading": 1}
     return {"is_reading": 0}
