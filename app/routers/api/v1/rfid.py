@@ -127,7 +127,9 @@ async def write_epc(device_name: str, write_tag: WriteTagValidator):
 	summary='Delete a tag by EPC',
 )
 async def delete_by_epc(epc: str):
-	result = rfid_manager.tags.remove_tag_by_identifier(identifier_value=epc, identifier_type='epc')
+	result = rfid_manager.tags.remove_tag_by_identifier(
+		identifier_value=epc.lower(), identifier_type='epc'
+	)
 	if not result:
 		return JSONResponse(
 			status_code=404,
@@ -150,7 +152,9 @@ async def delete_by_epc(epc: str):
 	summary='Delete a tag by TID',
 )
 async def delete_by_tid(tid: str):
-	result = rfid_manager.tags.remove_tag_by_identifier(identifier_value=tid, identifier_type='tid')
+	result = rfid_manager.tags.remove_tag_by_identifier(
+		identifier_value=tid.lower(), identifier_type='tid'
+	)
 	if not result:
 		return JSONResponse(
 			status_code=404,
