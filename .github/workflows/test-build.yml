@@ -61,7 +61,9 @@ jobs:
           git add windows/$projectName
           git commit -m "Update Windows executables for $projectName" || echo "No changes to commit"
           git push
+
   build-linux:
+    needs: [build-windows]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
@@ -71,6 +73,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Export project name
+        run: echo "PROJECT_NAME=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_ENV
 
       - name: Install Poetry and dependencies
         run: |
@@ -84,22 +89,6 @@ jobs:
       - name: Build executable
         run: poetry run python scripts/build_exe.py
 
-      - name: Upload Linux build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build
-          path: TEMP
-
-  publish-executables:
-    needs: [build-windows, build-linux]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Linux build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-build
-          path: build_dir
-
       - name: Checkout executables repo
         uses: actions/checkout@v4
         with:
@@ -111,17 +100,14 @@ jobs:
 
       - name: Remove old project folder and copy executables
         run: |
-          project_name=$(basename $GITHUB_REPOSITORY)
-          build_dir="build_dir"
-          dest_dir="executables-repo/linux/$project_name"
+          build_dir="TEMP"
+          dest_dir="executables-repo/linux/$PROJECT_NAME"
 
           # Remove only the old project folder
           rm -rf "$dest_dir"
           mkdir -p "$dest_dir"
 
-          if [ -d "$build_dir/TEMP" ]; then
-            rsync -av --exclude=build/ "$build_dir/TEMP/" "$dest_dir/"
-          elif [ -d "$build_dir" ]; then
+          if [ -d "$build_dir" ]; then
             rsync -av --exclude=build/ "$build_dir/" "$dest_dir/"
           else
             echo "Directory $build_dir not found, build may have failed."
@@ -130,17 +116,16 @@ jobs:
 
       - name: Commit and push executables
         run: |
-          project_name=$(basename $GITHUB_REPOSITORY)
           cd executables-repo
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add linux/$project_name
-          git commit -m "Update Linux executables for $project_name" || echo "No changes to commit"
+          git add linux/$PROJECT_NAME
+          git commit -m "Update Linux executables for $PROJECT_NAME" || echo "No changes to commit"
           git push
 
       - name: Determine tag to use
         run: |
-          project_name=$(basename $GITHUB_REPOSITORY)
+          project_name="$PROJECT_NAME"
           cd executables-repo
           git fetch --tags
 
