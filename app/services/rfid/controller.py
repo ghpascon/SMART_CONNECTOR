@@ -80,11 +80,11 @@ class Controller:
 
 	def add_to_write_list(self, tag: dict, target: str):
 		self.write_list[tag.get('tid')] = {
-			'target': target,
+			'target': target.lower(),
 			'original_epc': tag.get('epc'),
 		}
 		tag['target'] = target
-		logging.info(f"Added tag {tag.get('tid')} to write list with target {target}")
+		logging.info(f"Added tag {tag.get('tid')} to write list with target {tag.get('target')}")
 		self.on_event(name='write_list', event_type='add_to_write_list', event_data=tag)
 
 	def remove_from_write_list(self, tag: dict):
