@@ -167,7 +167,7 @@
 
                 this.loading = true;
                 try {
-                    const res = await fetch("{{ url_for('write_list') }}", {
+                    const res = await fetch("{{ url_for('create_write_list_prefix') }}", {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ epcs: this.selectedEpcs, prefix: this.prefix }),
