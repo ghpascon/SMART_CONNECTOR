@@ -26,7 +26,7 @@ class TagGtinSimulator(BaseModel):
 	def validate_gtin(cls, v):
 		if not re.fullmatch(r'\d{14}', v):
 			raise ValueError('GTIN must have exactly 14 digits')
-		return v
+		return v.lower()
 
 	@field_validator('qtd')
 	def validate_qtd(cls, v):

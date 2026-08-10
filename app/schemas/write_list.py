@@ -13,7 +13,7 @@ class WriteListPrefixModel(BaseModel):
 	def validate_prefix(cls, value: str) -> str:
 		if not regex_hex(value):
 			raise ValueError(f'Prefix {value!r} is not a valid hexadecimal string')
-		return value
+		return value.lower()
 
 	@field_validator('epcs')
 	def validate_epcs(cls, value: list[str]) -> list[str]:
@@ -22,4 +22,4 @@ class WriteListPrefixModel(BaseModel):
 		invalid = [epc for epc in value if not regex_hex(epc)]
 		if invalid:
 			raise ValueError(f'Invalid EPC(s): {invalid}')
-		return value
+		return [v.lower() for v in value]
