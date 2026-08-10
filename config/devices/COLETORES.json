@@ -1,0 +1,39 @@
+{
+  "reader": "X714",
+  "connection_type": "SERIAL",
+  "port": "AUTO",
+  "baudrate": 115200,
+  "vid": 1,
+  "pid": 1,
+  "ip": "192.168.1.101",
+  "tcp_port": 23,
+  "ble_name": "SMTX",
+  "buzzer": true,
+  "session": 1,
+  "start_reading": true,
+  "gpi_start": false,
+  "protected_inventory_active": false,
+  "protected_inventory_password": "12345678",
+  "ant_dict": {
+    "1": {
+      "active": true,
+      "power": 25,
+      "rssi": -120
+    },
+    "2": {
+      "active": false,
+      "power": 25,
+      "rssi": -120
+    },
+    "3": {
+      "active": false,
+      "power": 25,
+      "rssi": -120
+    },
+    "4": {
+      "active": false,
+      "power": 25,
+      "rssi": -120
+    }
+  }
+}
