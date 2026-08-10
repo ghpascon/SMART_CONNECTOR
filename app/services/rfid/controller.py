@@ -91,9 +91,13 @@ class Controller:
 	def remove_from_write_list(self, tag: dict):
 		tid = tag.get('tid')
 		if tid in self.write_list:
-			del self.write_list[tid]
 			logging.info(f'Removed tag {tid} from write list')
-			self.on_event(name='write_list', event_type='remove_from_write_list', event_data=tag)
+			self.on_event(
+				name='write_list',
+				event_type='remove_from_write_list',
+				event_data={**tag, 'original_epc': self.write_list[tid]['original_epc']},
+			)
+			del self.write_list[tid]
 			if not self.write_list:
 				logging.info('Write list is now empty')
 				self.on_event(name='write_list', event_type='write_list_empty', event_data={})
