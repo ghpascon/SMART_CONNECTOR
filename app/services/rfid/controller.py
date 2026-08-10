@@ -69,6 +69,7 @@ class Controller:
 
 	# [ WRITE LIST ]
 	def create_write_list_prefix(self, epcs: list, prefix: str):
+		self.clear_write_list()
 		for epc in epcs:
 			target = f'{prefix}{epc[len(prefix):]}'
 			current_tag = self.tags.get_by_identifier(epc)
