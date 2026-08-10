@@ -28,6 +28,15 @@ async def controller_info():
 	return info
 
 
+# [WRITE LIST]
+@router.get(
+	'/get_write_list',
+	summary='Get write list from RFID controller',
+)
+async def get_write_list():
+	return rfid_manager.controller.write_list
+
+
 @router.post(
 	'/create_write_list_prefix',
 	summary='Write a list of tags to the RFID controller',
