@@ -120,3 +120,48 @@ async def write_epc(device_name: str, write_tag: WriteTagValidator):
 	if not status:
 		return JSONResponse(status_code=400, content={'message': msg})
 	return JSONResponse(status_code=200, content={'message': 'Write epc command sent successfully'})
+
+
+@router.delete(
+	'/delete_by_epc/{epc}',
+	summary='Delete a tag by EPC',
+)
+async def delete_by_epc(epc: str):
+	result = rfid_manager.tags.remove_tag_by_identifier(identifier_value=epc, identifier_type='epc')
+	if not result:
+		return JSONResponse(
+			status_code=404,
+			content={'message': f'Tag with EPC {epc} not found.'},
+		)
+
+	rfid_manager.on_event(
+		name='delete_tag',
+		event_type='tag_deleted',
+		event_data=result[0],
+	)
+	return JSONResponse(
+		status_code=200,
+		content={'message': f'Tag with EPC {epc} has been deleted: {result}'},
+	)
+
+
+@router.delete(
+	'/delete_by_tid/{tid}',
+	summary='Delete a tag by TID',
+)
+async def delete_by_tid(tid: str):
+	result = rfid_manager.tags.remove_tag_by_identifier(identifier_value=tid, identifier_type='tid')
+	if not result:
+		return JSONResponse(
+			status_code=404,
+			content={'message': f'Tag with TID {tid} not found.'},
+		)
+	rfid_manager.on_event(
+		name='delete_tag',
+		event_type='tag_deleted',
+		event_data=result[0],
+	)
+	return JSONResponse(
+		status_code=200,
+		content={'message': f'Tag with TID {tid} has been deleted: {result}'},
+	)
