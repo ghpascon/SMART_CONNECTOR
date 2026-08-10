@@ -65,6 +65,8 @@ class Settings:
 		self.XTRACK_URL: str | None = data.get('XTRACK_URL', None)
 
 		self.PORT: int = data.get('PORT', 5000)
+		self.CLEAR_ON_START: bool = data.get('CLEAR_ON_START', True)
+		self.ONLY_COMPLETE_TABLE: bool = data.get('ONLY_COMPLETE_TABLE', False)
 
 		if not os.path.exists(self._config_path):
 			self.save()  # Save default config if file doesn't exist

@@ -1,4 +1,11 @@
 @echo off
+set /p CONFIRM=[WARN] This will reset your local branch to match remote. Continue? [y/N]: 
+if /i not "%CONFIRM%"=="y" (
+    echo [ABORTED] No changes made.
+    pause
+    exit /b 0
+)
+
 echo [INFO] Fetching remote...
 git fetch origin
 

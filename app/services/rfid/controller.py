@@ -45,7 +45,8 @@ class Controller:
 		logging.info(f'[ START ] {name}')
 		if not license_manager.validate_license():
 			return
-		self.tags.remove_tags_by_device(device=name)
+		if settings.CLEAR_ON_START:
+			self.tags.remove_tags_by_device(device=name)
 
 	def on_stop(self, name: str):
 		logging.info(f'[ STOP ] {name}')

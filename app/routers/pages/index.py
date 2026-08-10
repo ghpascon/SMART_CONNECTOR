@@ -26,7 +26,12 @@ async def index(request: Request):
 	# ]
 	return templates.TemplateResponse(
 		'pages/index/main.html',
-		{'request': request, 'title': settings.TITLE, 'alerts': alerts},
+		{
+			'request': request,
+			'title': settings.TITLE,
+			'alerts': alerts,
+			'only_complete_table': settings.ONLY_COMPLETE_TABLE,
+		},
 		media_type='text/html; charset=utf-8',
 	)
 
