@@ -1,13 +1,6 @@
 {
-    "_usage": {
-        "description": "HTTP POST dispatch example for when the write list becomes empty.",
-        "notes": [
-            "Event `on_event` is 'write_list' with `event_type` 'write_list_empty'.",
-            "Event data is empty ({}). Use only {name} and {event_type}."
-        ]
-    },
     "dispatch_type": "post",
-    "url": "http://localhost:5001/write/empty",
+    "url": "http://localhost:5001/write_list/empty",
     "on_event": "write_list_empty",
     "allow_batches": false,
     "headers": {

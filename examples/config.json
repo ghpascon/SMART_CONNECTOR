@@ -16,5 +16,6 @@
   "XTRACK_URL": "https://demo.smtx.com.br:6100/req",
   "PORT": 5000,
   "CLEAR_ON_START": true,
-  "ONLY_COMPLETE_TABLE": false
+  "ONLY_COMPLETE_TABLE": false,
+  "ALLOW_EXTERNAL_CONNECTIONS": true
 }

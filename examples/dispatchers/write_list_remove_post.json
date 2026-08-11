@@ -1,13 +1,6 @@
 {
-    "_usage": {
-        "description": "HTTP POST dispatch example for write_list 'remove_from_write_list' events when a tag is removed from the write list.",
-        "notes": [
-            "Event `on_event` is 'write_list' and `event_type` indicates the subtype.",
-            "Event data includes tag fields and 'original_epc' when a tag is removed from write list."
-        ]
-    },
     "dispatch_type": "post",
-    "url": "http://localhost:5001/write/remove",
+    "url": "http://localhost:5001/write_list/removed",
     "on_event": "remove_from_write_list",
     "allow_batches": false,
     "headers": {

@@ -38,7 +38,7 @@ app = create_application(title=settings.TITLE, swagger_path=SWAGGER_PATH)
 if __name__ == '__main__':
 	# Get port and host from settings or use defaults
 	port = settings.PORT
-	host = '0.0.0.0'
+	host = '0.0.0.0' if settings.ALLOW_EXTERNAL_CONNECTIONS else '127.0.0.1'
 
 	logging.info(f'Starting server on {host}:{port}')
 

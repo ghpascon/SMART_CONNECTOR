@@ -68,6 +68,10 @@ class Settings:
 		self.CLEAR_ON_START: bool = data.get('CLEAR_ON_START', True)
 		self.ONLY_COMPLETE_TABLE: bool = data.get('ONLY_COMPLETE_TABLE', False)
 
+		self.ALLOW_EXTERNAL_CONNECTIONS: bool = data.get('ALLOW_EXTERNAL_CONNECTIONS', True)
+		if not isinstance(self.ALLOW_EXTERNAL_CONNECTIONS, bool):
+			self.ALLOW_EXTERNAL_CONNECTIONS = True
+
 		if not os.path.exists(self._config_path):
 			self.save()  # Save default config if file doesn't exist
 
