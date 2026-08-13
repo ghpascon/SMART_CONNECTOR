@@ -179,9 +179,29 @@ run_build_in_container() {
 	echo "[7/8] Build completed inside container. Copying artifact to host $HOST_BUILD_DIR"
 	# Try to copy the expected artifact; build_exe.py places executable in TEMP/ by default
 	if docker exec "$CONTAINER_NAME" bash -lc "test -f $CONTAINER_WORKDIR/TEMP/main" >/dev/null 2>&1; then
-		docker cp "$CONTAINER_NAME":"$CONTAINER_WORKDIR/TEMP/main" "$HOST_BUILD_DIR/main"
-		chmod +x "$HOST_BUILD_DIR/main" || true
-		echo "  Copied: $HOST_BUILD_DIR/main"
+		echo "[7.1/8] Found artifact inside container. Verifying executable before copying..."
+		echo "  Running ldd and a short runtime test inside the container (timeout 10s)"
+
+		if docker exec "$CONTAINER_NAME" bash -lc "set -uo pipefail; \n  file $CONTAINER_WORKDIR/TEMP/main || true; \n  ldd $CONTAINER_WORKDIR/TEMP/main || true; \n  if ldd $CONTAINER_WORKDIR/TEMP/main 2>&1 | grep -q 'not found'; then echo 'MISSING_LIBS'; exit 5; fi; \n  if command -v timeout >/dev/null 2>&1; then timeout 10 $CONTAINER_WORKDIR/TEMP/main > $CONTAINER_WORKDIR/TEMP/main.run.log 2>&1 || true; RCODE=\$?; else $CONTAINER_WORKDIR/TEMP/main > $CONTAINER_WORKDIR/TEMP/main.run.log 2>&1 & PID=\$!; sleep 10; kill -0 \$PID >/dev/null 2>&1 && kill \$PID || true; wait \$PID 2>/dev/null || true; RCODE=\$?; fi; \n  echo RUNTIME_EXIT_CODE:\$RCODE; \n  tail -n 200 $CONTAINER_WORKDIR/TEMP/main.run.log || true; \n  if [ \$RCODE -ne 0 ] && [ \$RCODE -ne 124 ]; then echo 'RUNTIME_FAIL'; exit 6; fi; \n  exit 0"; then
+			docker cp "$CONTAINER_NAME":"$CONTAINER_WORKDIR/TEMP/main" "$HOST_BUILD_DIR/main"
+			chmod +x "$HOST_BUILD_DIR/main" || true
+			echo "  Copied: $HOST_BUILD_DIR/main"
+		else
+			RET_VERIFY=$?
+			if [ "$RET_VERIFY" -eq 5 ]; then
+				echo "ERROR: Missing shared libraries detected inside container. Not copying artifact."
+				docker exec "$CONTAINER_NAME" bash -lc "ldd $CONTAINER_WORKDIR/TEMP/main || true; echo '--- RUNTIME LOG ---'; cat $CONTAINER_WORKDIR/TEMP/main.run.log || true" || true
+				exit 1
+			elif [ "$RET_VERIFY" -eq 6 ]; then
+				echo "ERROR: Executable failed at runtime (non-zero exit). Not copying artifact. See logs:"
+				docker exec "$CONTAINER_NAME" bash -lc "cat $CONTAINER_WORKDIR/TEMP/main.run.log || true"
+				exit 1
+			else
+				echo "ERROR: Verification failed (exit code: $RET_VERIFY). Not copying artifact."
+				docker exec "$CONTAINER_NAME" bash -lc "ls -la $CONTAINER_WORKDIR/TEMP || true; cat $CONTAINER_WORKDIR/TEMP/main.run.log || true" || true
+				exit $RET_VERIFY
+			fi
+		fi
 	else
 		echo "  WARNING: Could not find expected output $CONTAINER_WORKDIR/TEMP/main inside container. Listing TEMP/:";
 		docker exec "$CONTAINER_NAME" bash -lc "ls -la $CONTAINER_WORKDIR/TEMP || true"
@@ -235,9 +255,29 @@ else
 
 		echo "Copying artifact from fallback container"
 		if docker exec "$CONTAINER_NAME" bash -lc "test -f $CONTAINER_WORKDIR/TEMP/main" >/dev/null 2>&1; then
-			docker cp "$CONTAINER_NAME":"$CONTAINER_WORKDIR/TEMP/main" "$HOST_BUILD_DIR/main"
-			chmod +x "$HOST_BUILD_DIR/main" || true
-			echo "  Copied: $HOST_BUILD_DIR/main"
+			echo "[7.1/8] Found artifact inside fallback container. Verifying executable before copying..."
+			echo "  Running ldd and a short runtime test inside the fallback container (timeout 10s)"
+
+			if docker exec "$CONTAINER_NAME" bash -lc "set -uo pipefail; \n  file $CONTAINER_WORKDIR/TEMP/main || true; \n  ldd $CONTAINER_WORKDIR/TEMP/main || true; \n  if ldd $CONTAINER_WORKDIR/TEMP/main 2>&1 | grep -q 'not found'; then echo 'MISSING_LIBS'; exit 5; fi; \n  if command -v timeout >/dev/null 2>&1; then timeout 10 $CONTAINER_WORKDIR/TEMP/main > $CONTAINER_WORKDIR/TEMP/main.run.log 2>&1 || true; RCODE=\$?; else $CONTAINER_WORKDIR/TEMP/main > $CONTAINER_WORKDIR/TEMP/main.run.log 2>&1 & PID=\$!; sleep 10; kill -0 \$PID >/dev/null 2>&1 && kill \$PID || true; wait \$PID 2>/dev/null || true; RCODE=\$?; fi; \n  echo RUNTIME_EXIT_CODE:\$RCODE; \n  tail -n 200 $CONTAINER_WORKDIR/TEMP/main.run.log || true; \n  if [ \$RCODE -ne 0 ] && [ \$RCODE -ne 124 ]; then echo 'RUNTIME_FAIL'; exit 6; fi; \n  exit 0"; then
+				docker cp "$CONTAINER_NAME":"$CONTAINER_WORKDIR/TEMP/main" "$HOST_BUILD_DIR/main"
+				chmod +x "$HOST_BUILD_DIR/main" || true
+				echo "  Copied: $HOST_BUILD_DIR/main"
+			else
+				RET_VERIFY=$?
+				if [ "$RET_VERIFY" -eq 5 ]; then
+					echo "ERROR: Missing shared libraries detected inside fallback container. Not copying artifact."
+					docker exec "$CONTAINER_NAME" bash -lc "ldd $CONTAINER_WORKDIR/TEMP/main || true; echo '--- RUNTIME LOG ---'; cat $CONTAINER_WORKDIR/TEMP/main.run.log || true" || true
+					exit 1
+				elif [ "$RET_VERIFY" -eq 6 ]; then
+					echo "ERROR: Executable failed at runtime (non-zero exit) in fallback container. Not copying artifact. See logs:"
+					docker exec "$CONTAINER_NAME" bash -lc "cat $CONTAINER_WORKDIR/TEMP/main.run.log || true"
+					exit 1
+				else
+					echo "ERROR: Verification failed in fallback container (exit code: $RET_VERIFY). Not copying artifact."
+					docker exec "$CONTAINER_NAME" bash -lc "ls -la $CONTAINER_WORKDIR/TEMP || true; cat $CONTAINER_WORKDIR/TEMP/main.run.log || true" || true
+					exit $RET_VERIFY
+				fi
+			fi
 		else
 			echo "ERROR: Build did not produce $CONTAINER_WORKDIR/TEMP/main in fallback container. Listing TEMP/:";
 			docker exec "$CONTAINER_NAME" bash -lc "ls -la $CONTAINER_WORKDIR/TEMP || true"
