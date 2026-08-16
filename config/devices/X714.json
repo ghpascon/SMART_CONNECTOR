@@ -6,9 +6,13 @@
   "vid": 1,
   "pid": 1,
   "buzzer": true,
-  "session": 1,
+  "session": 0,
   "start_reading": true,
-  "read_power": 24,
+  "gpi_start": false,
   "protected_inventory_active": false,
-  "protected_inventory_password": "12345678"
+  "protected_inventory_password": "12345678",
+  "active_ant": [
+    1
+  ],
+  "read_power": 25
 }
