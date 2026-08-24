@@ -123,7 +123,11 @@
 
         // Ensure the JSON editor shows the current reader value for clarity
         const cfg = Object.assign({}, config || {});
-        if (this.deviceType) cfg.READER = this.deviceType;
+        if (this.deviceType) {
+          cfg.READER = this.deviceType;
+          // Remove lowercase `reader` to avoid duplicating the key in the editor
+          if ("reader" in cfg) delete cfg.reader;
+        }
 
         this.formConfigJson = JSON.stringify(cfg, null, 2);
         this.showCreateDevice = true;
@@ -280,9 +284,12 @@
           const existingReader = payload.READER ?? payload.reader;
           if (existingReader) {
             payload.READER = existingReader;
+            // Remove lowercase `reader` to avoid sending duplicated keys
+            if ("reader" in payload) delete payload.reader;
           } else if (this.deviceType) {
             // No READER provided in JSON — fall back to the selected example identifier
             payload.READER = this.deviceType;
+            if ("reader" in payload) delete payload.reader;
           }
 
           const urlTemplate = this.isEdit
