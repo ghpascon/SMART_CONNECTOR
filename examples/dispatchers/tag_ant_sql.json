@@ -20,11 +20,23 @@
             "gte",
             "lte",
             "contains"
-        ]
+        ],
+        "possible_vars": {
+            "dispatch_type": "string — 'sql' (required)",
+            "on_event": "string — event name to match (required)",
+            "connection_string": "string — async DB connection string (e.g., postgresql+asyncpg://user:pass@host/db)",
+            "query": "string — SQL statement with named params (e.g., :device)",
+            "params": "object — mapping of param names to template values (supports placeholders)",
+            "flush_interval_seconds": "number — how often to flush pending batches when not full (seconds, example only)",
+            "retry_attempts": "int — number of retries on failure (default 3)",
+            "retry_backoff_seconds": "number — seconds between retries (default 0.25)",
+            "filters": "list — list of filter objects with keys 'key','value','operator' to restrict dispatch"
+        }
     },
     "dispatch_type": "sql",
     "connection_string": "postgresql+asyncpg://user:password@localhost:5432/mydatabase",
     "on_event": "tag",
+    "flush_interval_seconds": 0.1,
     "filters": [
         {
             "_description": "Only dispatch tags read on antenna 1 or 2.",

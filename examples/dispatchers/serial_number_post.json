@@ -4,12 +4,25 @@
         "notes": [
             "serial_number events usually send data as string.",
             "When payload is scalar, use {data} instead of {data[key]}."
-        ]
+        ],
+        "possible_vars": {
+            "dispatch_type": "string — 'post' (required)",
+            "on_event": "string — event name to match (required)",
+            "url": "string — destination HTTP URL",
+            "headers": "object — HTTP headers",
+            "body": "object|array|value — payload template; supports placeholders {name}, {event_type}, {data}, {data[key]}",
+            "allow_batches": "boolean — whether this dispatch may be batched (default true)",
+            "flush_interval_seconds": "number — how often to flush pending batches when not full (seconds, example only)",
+            "retry_attempts": "int — number of retries on failure (default 3)",
+            "retry_backoff_seconds": "number — seconds between retries (default 0.25)",
+            "filters": "list — list of filter objects with keys 'key','value','operator' to restrict dispatch"
+        }
     },
     "dispatch_type": "post",
     "url": "http://localhost:5001/device/serial-number",
     "on_event": "serial_number",
     "allow_batches": false,
+    "flush_interval_seconds": 0.1,
     "filters": [
         {
             "_description": "Only dispatch for XPAD.",
