@@ -67,8 +67,9 @@ jobs:
           path: TEMP/
           if-no-files-found: error
 
-  prepare-executables-repo:
+  publish-executables:
     if: github.event_name != 'pull_request'
+    needs: [build-windows, build-linux]
     runs-on: ubuntu-22.04
     env:
       PROJECT_NAME: ${{ github.event.repository.name }}
@@ -84,6 +85,18 @@ jobs:
           sparse-checkout: |
             linux
             windows
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-temp
+          path: artifacts/windows
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-temp
+          path: artifacts/linux
 
       - name: Determine tag to use
         run: |
@@ -101,54 +114,16 @@ jobs:
               NEW_TAG="${project_name}-v1.0.0"
             else
               version="${last_tag##*-v}"
-              major=$(echo $version | cut -d. -f1)
-              minor=$(echo $version | cut -d. -f2)
-              patch=$(echo $version | cut -d. -f3)
+              major=$(echo "$version" | cut -d. -f1)
+              minor=$(echo "$version" | cut -d. -f2)
+              patch=$(echo "$version" | cut -d. -f3)
               patch=$((patch + 1))
               NEW_TAG="${project_name}-v${major}.${minor}.${patch}"
             fi
             echo "Generated incremental tag: $NEW_TAG"
           fi
 
-          echo "$NEW_TAG" > ../NEW_TAG.txt
-
-      - name: Pack prepared repository
-        run: tar -czf executables-repo-prepared.tar.gz executables-repo NEW_TAG.txt
-
-      - name: Upload prepared repo artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: executables-repo-prepared
-          path: executables-repo-prepared.tar.gz
-          if-no-files-found: error
-
-  publish-executables:
-    if: github.event_name != 'pull_request'
-    needs: [build-windows, build-linux, prepare-executables-repo]
-    runs-on: ubuntu-22.04
-    env:
-      PROJECT_NAME: ${{ github.event.repository.name }}
-    steps:
-      - name: Download prepared repo
-        uses: actions/download-artifact@v4
-        with:
-          name: executables-repo-prepared
-          path: prepared
-
-      - name: Extract prepared repo
-        run: tar -xzf prepared/executables-repo-prepared.tar.gz
-
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-temp
-          path: artifacts/windows
-
-      - name: Download Linux artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-temp
-          path: artifacts/linux
+          echo "NEW_TAG=$NEW_TAG" >> "$GITHUB_ENV"
 
       - name: Copy executables into target folders
         run: |
@@ -182,7 +157,6 @@ jobs:
           cd executables-repo
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          NEW_TAG=$(cat ../NEW_TAG.txt)
           if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
             echo "Tag $NEW_TAG already exists locally"
           else
