@@ -1,0 +1,17 @@
+{
+  "connection_type": "TCP",
+  "ip": "192.168.1.101",
+  "tcp_port": 23,
+  "buzzer": false,
+  "session": 0,
+  "start_reading": true,
+  "gpi_start": false,
+  "protected_inventory_active": false,
+  "protected_inventory_password": "12345678",
+  "active_ant": [
+    1,
+    2
+  ],
+  "read_power": 33,
+  "reader": "X714"
+}
