@@ -1,0 +1,14 @@
+{
+  "reader": "X714",
+  "connection_type": "SERIAL",
+  "port": "AUTO",
+  "baudrate": 115200,
+  "vid": 1,
+  "pid": 1,
+  "buzzer": true,
+  "session": 1,
+  "start_reading": true,
+  "read_power": 27,
+  "protected_inventory_active": false,
+  "protected_inventory_password": "12345678"
+}
