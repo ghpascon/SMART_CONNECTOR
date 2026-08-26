@@ -41,9 +41,11 @@ async def connect_on_startup():
 async def clear_old_tags():
 	while True:
 		if settings.CLEAR_OLD_TAGS_INTERVAL is None or settings.CLEAR_OLD_TAGS_INTERVAL <= 0:
-			await asyncio.sleep(60)
+			await asyncio.sleep(600)
 			continue
-		await asyncio.sleep(1)
+		await asyncio.sleep(
+			1 if settings.CLEAR_OLD_TAGS_INTERVAL < 10 else settings.CLEAR_OLD_TAGS_INTERVAL / 2
+		)
 		if len(rfid_manager.tags) == 0:
 			continue
 
