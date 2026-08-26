@@ -27,22 +27,12 @@ class Tag(Base, BaseMixin):
 	device = Column(String(100), nullable=False)
 
 	# RFID data fields
-	epc = Column(String(24), nullable=False)
+	epc = Column(String(24), nullable=False, index=True)
 
-	tid = Column(String(24), nullable=True)
+	tid = Column(String(24), nullable=True, index=True)
 
 	ant = Column(Integer, nullable=True)
 	rssi = Column(Integer, nullable=True)
-
-	# Indexes for optimal query performance
-	__table_args__ = (
-		# Composite index for device + epc (most common query pattern)
-		Index('ix_tags_device_epc', 'device', 'epc'),
-		# Individual indexes
-		Index('ix_tags_device', 'device'),
-		Index('ix_tags_tid', 'tid'),
-		Index('ix_tags_epc', 'epc'),
-	)
 
 
 class Event(Base, BaseMixin):
@@ -59,20 +49,16 @@ class Event(Base, BaseMixin):
 	id = Column(Integer, primary_key=True, autoincrement=True)
 
 	# Device identification
-	device = Column(String(100), nullable=False)
+	device = Column(String(100), nullable=False, index=True)
 
 	# Event classification
-	event_type = Column(String(50), nullable=False)
+	event_type = Column(String(50), nullable=False, index=True)
 
 	# Event data
 	event_data = Column(Text, nullable=False)
 
 	# Indexes for optimal query performance
 	__table_args__ = (
-		# Individual indexes
-		Index('ix_events_device', 'device'),
-		Index('ix_events_event_type', 'event_type'),
-		Index('ix_events_created_at', 'created_at'),
 		# Composite indexes
 		Index('ix_events_device_type', 'device', 'event_type'),
 	)
