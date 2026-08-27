@@ -2,7 +2,7 @@
 
 # SMARTX X-BRIDGE
 
-**Versão:** 9.5.0
+**Versão:** 9.8.13
 
 [**HOME**](/) | [**LOGS**](/logs) | [**API DOCS**](/docs)
 
@@ -45,6 +45,9 @@ Grupos de endpoints
 
 - **Controller** — `/api/v1/controller`
   - Informações de runtime e estado do controlador RFID.
+
+- **Dispatchers** — `/api/v1/dispatchers`
+  - Gerenciamento de dispatchers: listar exemplos, obter conteúdo de exemplo, criar/atualizar e deletar dispatches de roteamento (POST/SQL).
 
 ---
 

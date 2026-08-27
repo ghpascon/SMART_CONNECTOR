@@ -2560,13 +2560,13 @@ reference = "pypi-simple"
 
 [[package]]
 name = "smartx-rfid"
-version = "11.8.18"
+version = "11.9.1"
 description = "SmartX RFID library"
 optional = false
 python-versions = ">=3.11,<4.0"
 files = [
-    {file = "smartx_rfid-11.8.18-py3-none-any.whl", hash = "sha256:24f693d0fbc42834e5ee5fa31d50c17527cc82f52a4033e96690fb1dedeb21ec"},
-    {file = "smartx_rfid-11.8.18.tar.gz", hash = "sha256:284964c9fad3ef0bc085ae063de1d69bd7297d09b8e75b58d4ea9039a6917e7f"},
+    {file = "smartx_rfid-11.9.1-py3-none-any.whl", hash = "sha256:17f67cddfb8204a13e9c96a62785cb61dc89fd721cacb23d6dbc5b2be8a1a151"},
+    {file = "smartx_rfid-11.9.1.tar.gz", hash = "sha256:633817efcb093958d036eb9f860b21d8ce9388bab469997edd479d378190b24a"},
 ]
 
 [package.dependencies]
@@ -3263,4 +3263,4 @@ reference = "pypi-simple"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.15"
-content-hash = "b946d391f955cdcd76113841c16c7351570ac965df4552e7affea1d3b5c60dcb"
+content-hash = "acde3dddf87d15ea7f5d15a4101b079f80f2dc22aea7e4b65381b9258e21e265"

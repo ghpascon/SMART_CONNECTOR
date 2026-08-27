@@ -129,15 +129,16 @@ docker run -it --rm -p 5000:5000 x-bridge
 
 ## API Groups
 
-| Group           | Prefix                | Description                                                     |
-| --------------- | --------------------- | --------------------------------------------------------------- |
-| **RFID**        | `/api/v1/rfid`        | Read tags, EPCs, TIDs, GTIN stats, clear tag memory, write EPC  |
-| **Devices**     | `/api/v1/devices`     | List devices, get/set config, device status and info            |
-| **Application** | `/api/v1/application` | App settings CRUD, device config CRUD, restart/shutdown         |
-| **Simulator**   | `/api/v1/simulator`   | Simulate tags, events, tag lists, GTIN-14 tag generation        |
-| **Receive**     | `/api/v1/receive`     | Ingest tag/event data from external readers (X714, R700, XSCAN) |
-| **License**     | `/api/v1/license`     | Get license info, upload license                                |
-| **Controller**  | `/api/v1/controller`  | RFID controller runtime info                                    |
+| Group           | Prefix                | Description                                                                                              |
+| --------------- | --------------------- | -------------------------------------------------------------------------------------------------------- |
+| **RFID**        | `/api/v1/rfid`        | Read tags, EPCs, TIDs, GTIN stats, clear tag memory, write EPC                                           |
+| **Devices**     | `/api/v1/devices`     | List devices, get/set config, device status and info                                                     |
+| **Application** | `/api/v1/application` | App settings CRUD, device config CRUD, restart/shutdown                                                  |
+| **Simulator**   | `/api/v1/simulator`   | Simulate tags, events, tag lists, GTIN-14 tag generation                                                 |
+| **Receive**     | `/api/v1/receive`     | Ingest tag/event data from external readers (X714, R700, XSCAN)                                          |
+| **License**     | `/api/v1/license`     | Get license info, upload license                                                                         |
+| **Controller**  | `/api/v1/controller`  | RFID controller runtime info                                                                             |
+| **Dispatchers** | `/api/v1/dispatchers` | Manage dispatchers: list examples, get example content, create/update and delete dispatch configurations |
 
 Full interactive documentation available at `/docs`.
 
@@ -146,6 +147,8 @@ Full interactive documentation available at `/docs`.
 ## Dispatchers
 
 Dispatchers are configurable event forwarders. They listen to RFID/runtime events and dispatch payloads to external systems using either HTTP POST or SQL inserts.
+
+API endpoints available at `/api/v1/dispatchers` allow listing example dispatches, retrieving example content, creating/updating, and deleting dispatch configurations at runtime.
 
 ### Locations
 
