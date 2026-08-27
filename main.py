@@ -60,11 +60,28 @@ if __name__ == '__main__':
 			app, host=host, port=port, access_log=False, log_level='critical', log_config=None
 		)
 	except SystemExit as e:
-		logging.error(f'Server exited with SystemExit: {e}')
-		error_html = get_frozen_path('app/templates/start_error.html')
-		url = f'file://{error_html}'
-		webbrowser.open_new(url)
-		asyncio.sleep(1)
+		# uvicorn (or a reloader) may call sys.exit(0) on normal shutdown.
+		# Treat SystemExit with code 0 as a normal exit and avoid showing
+		# the start error page. When running as a frozen executable from a
+		# terminal, keep the process alive so the terminal window doesn't
+		# close immediately.
+		code = getattr(e, 'code', None)
+		if code in (0, None):
+			logging.info(f'Server exited normally (SystemExit: {e})')
+			try:
+				if getattr(sys, 'frozen', False) and sys.stdout.isatty():
+					logging.info(
+						'Frozen executable detected; keeping process alive. Press Ctrl+C to exit.'
+					)
+					threading.Event().wait()
+			except Exception:
+				pass
+		else:
+			logging.error(f'Server exited with SystemExit: {e}')
+			error_html = get_frozen_path('app/templates/start_error.html')
+			url = f'file://{error_html}'
+			webbrowser.open_new(url)
+			asyncio.run(asyncio.sleep(1))
 
 	except Exception as e:
 		logging.error(f'Failed to start server: {e}')
