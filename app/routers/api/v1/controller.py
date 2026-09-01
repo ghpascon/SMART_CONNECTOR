@@ -57,7 +57,7 @@ async def create_write_list_prefix(write_list: WriteListPrefixModel):
 	summary='Add a tag to the write list in the RFID controller',
 )
 async def add_to_write_list(tid: str, target: str):
-	tag = rfid_manager.controller.tags.get_by_identifier(tid, identifier_type='tid')
+	tag = rfid_manager.controller.tags.get_by_identifier(tid.lower(), identifier_type='tid')
 	if not tag:
 		return JSONResponse(status_code=404, content={'message': f'Tag {tid} not found'})
 	rfid_manager.controller.add_to_write_list(tag, target)
@@ -78,7 +78,7 @@ async def clear_write_list():
 	summary='Delete a tag from the write list in the RFID controller',
 )
 async def delete_tid_from_write_list(tid: str):
-	tag = rfid_manager.controller.tags.get_by_identifier(tid, identifier_type='tid')
+	tag = rfid_manager.controller.tags.get_by_identifier(tid.lower(), identifier_type='tid')
 	if not tag:
 		return JSONResponse(status_code=404, content={'message': f'Tag {tid} not found'})
 	success = rfid_manager.controller.remove_from_write_list(tag)

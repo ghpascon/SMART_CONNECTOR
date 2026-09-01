@@ -1,9 +1,3 @@
-<img src="/static/images/logo.png" alt="Logo" class="img-fluid" style="height: 50px;" />
-
-# SMARTX X-BRIDGE
-
-**Versão:** 9.8.13
-
 [**HOME**](/) | [**LOGS**](/logs) | [**API DOCS**](/docs)
 
 Plataforma de gestão de leitores RFID e roteamento de eventos. Abaixo estão os grupos de endpoints disponíveis expostos pela API REST.

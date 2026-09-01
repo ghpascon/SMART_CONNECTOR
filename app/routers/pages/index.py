@@ -3,6 +3,7 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import HTMLResponse
 
 from app.core import settings, templates
+from app import __version__
 
 router = APIRouter(prefix='', tags=['Pages'])
 
@@ -40,7 +41,7 @@ async def index(request: Request):
 async def docs():
 	return get_swagger_ui_html(
 		openapi_url='/openapi.json',
-		title=settings.TITLE + ' - Docs',
+		title=f'{settings.TITLE} v{__version__}',
 		swagger_js_url='/static/docs/swagger-ui-bundle.js',
 		swagger_css_url='/static/docs/swagger-ui.css',
 		swagger_favicon_url='/static/images/logo.png',
