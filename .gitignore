@@ -161,5 +161,6 @@ cython_debug/
 license.txt
 
 Logs*
+logs*
 TEMP*
 config*
