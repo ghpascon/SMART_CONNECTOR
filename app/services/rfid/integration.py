@@ -77,7 +77,9 @@ class Integration:
 		try:
 			if settings.XTRACK_URL is not None:
 				logging.info('Setting up Webhook Xtrack Integration')
-				self.webhook_xtrack = WebhookXtrack(url=settings.XTRACK_URL, timeout=1)
+				self.webhook_xtrack = WebhookXtrack(
+					url=settings.XTRACK_URL, timeout=1, queue_limit=500
+				)
 				return True
 			else:
 				logging.warning('XTRACK_URL not set. Skipping Webhook Xtrack Integration setup.')
@@ -161,7 +163,7 @@ class Integration:
 		# XTRACK INTEGRATION
 		if self.webhook_xtrack is not None:
 			logging.info('[ TAG INTEGRATION ] XTRACK')
-			tasks.append(self.webhook_xtrack.post(tag))
+			tasks.append(self.webhook_xtrack.add_to_queue(tag))
 
 		# Beep
 		if settings.BEEP and self.indicator is not None:
