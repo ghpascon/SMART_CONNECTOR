@@ -19,7 +19,12 @@ def create_settings_schema() -> type[BaseModel]:
 	fields = {}
 
 	for key, value in data.items():
-		if value is None:
+		if (
+			isinstance(value, type(None))
+			or isinstance(value, list)
+			or isinstance(value, dict)
+			or isinstance(value, str)
+		):
 			fields[key] = (Any, Field(default=None))
 		else:
 			value_type = type(value)
